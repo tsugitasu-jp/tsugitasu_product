@@ -1,0 +1,61 @@
+version: '3'
+services:
+    mongo:
+        image: mongo
+        environment:
+          - MONGO_INITDB_ROOT_USERNAME
+          - MONGO_INITDB_ROOT_PASSWORD
+          - MONGO_INITDB_DATABASE
+          - TZ=Azia/Tokyo
+        expose: 
+            - '27017'
+        volumes:
+            - ./mongo/db:/mongo/db
+            - ./mongo/configdb:/mongo/configdb
+    app:
+        build: 
+          context: .
+          dockerfile: docker/back/Dockerfile
+        #command: 'sh start.sh'
+        #command: "python manage.py migrate"
+        #command: "python manage.py runserver 0.0.0.0:8000"
+        command: uwsgi --socket :8001 --module config.wsgi --py-autoreload 1
+        volumes:
+            - ./src:/code
+        #ports:
+        #    - 8000:8000
+        expose:
+            - "8001"
+        depends_on:
+            - mongo
+        restart: always
+    
+    front:
+        build: 
+            context: .
+            dockerfile: docker/front/Dockerfile
+        expose:
+             - "80"
+        stdin_open: true
+        volumes:
+            - ./src/front:/code/front
+        command: 'npm run serve'
+    
+    # For celery
+    #redis:
+    #    image: redis:alpine
+    
+    nginx:
+        image: nginx:latest
+        environment:
+            TZ: 'Asia/Tokyo'
+        ports:
+            - 80:80
+            - 8000:8000
+        volumes:
+            - ./nginx/conf:/etc/nginx/conf.d
+            - ./nginx/uwsgi:/etc/nginx/uwsgi
+            - ./src/static:/var/www/static
+            - ./src/templates:/var/www/templates
+        depends_on:
+            - app
