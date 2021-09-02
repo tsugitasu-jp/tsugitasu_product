@@ -13,15 +13,17 @@ import configparser
 import os
 
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 from drf_firebase_auth.utils import map_firebase_uid_to_username
 from pymongo import MongoClient
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 conf = configparser.ConfigParser()
 settingsFilePath = os.path.join(BASE_DIR, "settings.ini")
 conf.read_file(open(settingsFilePath, "r"))
+
+env = conf['os']['user']
 
 
 # Quick-start development settings - unsuitable for production
@@ -30,27 +32,6 @@ conf.read_file(open(settingsFilePath, "r"))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'qn7y!5zf$u#l*z4*ndp6jq#l#u38=fm!60s40%+6p_9r$#+-^2'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = ['*']
-
-
-# Application definition
-
-INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'drf_firebase_auth',
-    'rest_framework',
-    'users',
-    'apiv1',
-]
-
 # 追記
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -58,7 +39,6 @@ REST_FRAMEWORK = {
         'drf_firebase_auth.authentication.FirebaseAuthentication',
     ]
 }
-
 
 DRF_FIREBASE_AUTH = {
     # allow anonymous requests without Authorization header set
@@ -88,6 +68,7 @@ DRF_FIREBASE_AUTH = {
 }
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -98,7 +79,6 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'config.urls'
-
 
 TEMPLATES = [
     {
@@ -118,7 +98,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
@@ -135,7 +114,7 @@ DATABASES = {
 }
 
 # pymongo経由でのアクセス
-client = MongoClient('mongodb://root:TECHCAFE@mongo:27017')
+client = MongoClient(f"mongodb://{conf['db']['user']}:{conf['db']['pass']}@mongo:{conf['db']['port']}")
 tsugitasu_db = client['tsugitasu']
 
 # Application definition
@@ -177,9 +156,22 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
-STATIC_URL = '/static/'
-STATICFILES_DIR = [os.path.join(BASE_DIR, 'static')]
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# AWS config
+AWS_ACCESS_KEY_ID = conf['aws']['AWS_ACCESS_KEY_ID']
+AWS_SECRET_ACCESS_KEY = conf['aws']['AWS_SECRET_ACCESS_KEY']
+
+
+# CORS
+CORS_ORIGIN_ALLOW_ALL=False
+CORS_ORIGIN_WHITELIST = {
+    'http://localhost:8080',
+    'http://127.0.0.1:8080',
+}

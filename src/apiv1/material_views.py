@@ -1,5 +1,10 @@
+import os
+import shutil
 import uuid
 from datetime import datetime, timedelta
+
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 
 from rest_framework import status
 
@@ -8,8 +13,9 @@ from rest_framework.response import Response
 
 from apiv1.authentication import FirebaseAuthentication
 from apiv1.decorator import role_permission
-from config.settings import tsugitasu_db
+from config.settings.base import MEDIA_ROOT, tsugitasu_db, env
 from constants import ROLE_NONE, ROLE_ALL, ROLE_TEACHER, ROLE_STUDENT
+from apiv1.material_func import contetn_upload_to_s3
 from pymongo import ASCENDING
 from bson.objectid import ObjectId
 
@@ -19,26 +25,38 @@ co_user = tsugitasu_db['users_user']
 
 # 教材登録
 class MaterialCreateAPIView(APIView):
-    authentication_classes = [FirebaseAuthentication, ]
+    #authentication_classes = [FirebaseAuthentication, ]
 
-    @role_permission(ROLE_TEACHER)
+    #@role_permission(ROLE_TEACHER)
     def post(self, request):
-        user = request.user
+        #user = request.user
         input_dic = request.data
         # 本当はここで検証
-        input_dic['cid'] = str(uuid.uuid4()) # 派生版・更新版でも共通となるIDを振る
-        input_dic['bid'] = 1 # ブランチを特定するID
+        cid = input_dic['cid'] = str(uuid.uuid4()) # 派生版・更新版でも共通となるIDを振る
+        bid = input_dic['bid'] = 1 # ブランチを特定するID
         input_dic['mes'] = "オリジナル"
-        input_dic['user_ref'] = user.uid
+        #input_dic['user_ref'] = user.uid
         input_dic['parent'] = input_dic['derived'] = None
         input_dic['is_original'] = True
         input_dic['comments'] = []
-        input_dic['ver'] = 1
+        vid = input_dic['ver'] = 1
         input_dic['is_latest'] = True
         input_dic['good'] = input_dic['read'] = 0
         input_dic['created_at'] = datetime.utcnow() + timedelta(hours=9)
 
-        co_material.insert_one(input_dic)
+        # file受信とローカルへ保存
+        file = request.FILES['fd']
+        file_path = f"{cid}/b{bid}/v{vid}/{file.name}"
+        local_path = os.path.join(MEDIA_ROOT, file_path)
+        default_storage.save(local_path, ContentFile(file.read()))
+        
+        # fileをs3に転送
+        if env == "test":
+            contetn_upload_to_s3(cid, bid, vid, file.name)
+            local_media_cid_path = os.path.join(MEDIA_ROOT, f"{cid}")
+            shutil.rmtree(local_media_cid_path)
+
+        #co_material.insert_one(input_dic)
 
         return Response(status=status.HTTP_200_OK)
 
@@ -92,4 +110,3 @@ class HistoryTreeGetAPIView(APIView):
             bid += 1
         #print(contents)
         return Response(contents)
-

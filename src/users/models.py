@@ -94,3 +94,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     # 既存メソッドの変更
     def get_full_name(self):
         return self.displayname
+
+
+class PhotoModel(models.Model):
+    image = models.ImageField(upload_to='images')
+
+    def __str__(self):
+        return self.image.url

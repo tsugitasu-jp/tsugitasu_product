@@ -7,8 +7,8 @@ services:
           - MONGO_INITDB_ROOT_PASSWORD
           - MONGO_INITDB_DATABASE
           - TZ=Azia/Tokyo
-        expose: 
-            - '27017'
+        ports: 
+            - 27017:27017
         volumes:
             - ./mongo/db:/mongo/db
             - ./mongo/configdb:/mongo/configdb
@@ -17,8 +17,7 @@ services:
           context: .
           dockerfile: docker/back/Dockerfile
         #command: 'sh start.sh'
-        #command: "python manage.py migrate"
-        #command: "python manage.py runserver 0.0.0.0:8000"
+
         command: uwsgi --socket :8001 --module config.wsgi --py-autoreload 1
         volumes:
             - ./src:/code
@@ -29,17 +28,18 @@ services:
         depends_on:
             - mongo
         restart: always
+        stdin_open: true
     
     front:
         build: 
             context: .
             dockerfile: docker/front/Dockerfile
-        expose:
-             - "80"
+        ports:
+            - 8080:8080
         stdin_open: true
         volumes:
             - ./src/front:/code/front
-        command: 'npm run serve'
+        #command: 'npm run serve'
     
     # For celery
     #redis:
@@ -56,6 +56,7 @@ services:
             - ./nginx/conf:/etc/nginx/conf.d
             - ./nginx/uwsgi:/etc/nginx/uwsgi
             - ./src/static:/var/www/static
+            - ./src/media:/var/www/media
             - ./src/templates:/var/www/templates
         depends_on:
             - app

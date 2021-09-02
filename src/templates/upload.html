@@ -1,0 +1,8 @@
+<form action="" method="POST" enctype="multipart/form-data">{% csrf_token %}        {{ form.as_p }}
+    <button type="submit">アップロード</button>
+</form>
+
+{% for photo in photos %}
+    <a href="{{ photo.image.url }}">{{ photo }}</a>
+    <hr>
+{% endfor %}

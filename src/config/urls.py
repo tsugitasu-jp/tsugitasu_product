@@ -14,18 +14,40 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.shortcuts import render
 from django.urls import path
 from django.urls import include
 
 from apiv1 import urls
 
-def showtop(request):
-    return render(request, 'index.html')
+from django.views import generic
+from django import forms
+from users.models import PhotoModel
+
+class PhotoForm(forms.ModelForm):
+
+    class Meta:
+        model = PhotoModel
+        fields = '__all__'
+
+
+class Photo(generic.CreateView):
+    model = PhotoModel
+    form_class = PhotoForm
+    template_name = 'upload.html'
+    success_url = '/'
+
+    def get_context_data(self, **kwargs):
+        context = super(Photo, self).get_context_data(**kwargs) # はじめに継承元のメソッドを呼び出す
+        context["photos"] = PhotoModel.objects.all()
+        return context
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-v1/', include(urls)),
-    path('', showtop),
+    path('', Photo.as_view()),
 ]
+
+
+
+
 
