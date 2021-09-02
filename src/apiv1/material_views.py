@@ -19,13 +19,14 @@ from apiv1.material_func import contetn_upload_to_s3
 from pymongo import ASCENDING
 from bson.objectid import ObjectId
 
+import numpy as np
 
 co_material = tsugitasu_db['material']
 co_user = tsugitasu_db['users_user']
 
 # 教材登録
 class MaterialCreateAPIView(APIView):
-    #authentication_classes = [FirebaseAuthentication, ]
+    authentication_classes = [FirebaseAuthentication, ]
 
     #@role_permission(ROLE_TEACHER)
     def post(self, request):
@@ -61,7 +62,7 @@ class MaterialCreateAPIView(APIView):
         return Response(status=status.HTTP_200_OK)
 
 
-# 教材の木(history-tree)を取得
+# 教材の木(history-tree)を取得 (機能番号22)
 class HistoryTreeGetAPIView(APIView):
     authentication_classes = []
     keys = ["bid", "mes", "ver", "created_at", "display_name", "photo_url", "depth"]
@@ -110,3 +111,40 @@ class HistoryTreeGetAPIView(APIView):
             bid += 1
         #print(contents)
         return Response(contents)
+
+
+# 詳細表示用の教材データを取得 (機能番号21)
+class GetMaterialAPIView(APIView):
+    authentication_classes = []
+    keys = ["mes", "uid", "display_name", "photo_url", "title", "context", "file_name", "content_image_main", "content_image_subs", "created_at", "tags", "comments", "good",]
+
+    @role_permission(ROLE_NONE)
+    def get(self, request, cid, bid, ver):
+        user = request.user
+
+        def to_dict(x):
+            return {key: x[key] for key in self.keys}
+
+        cursor = co_material.find(
+            filter={'cid': cid, 'bid': bid, 'ver': ver},
+            projection={"user_ref": 1 ,"mes": 1, "title": 1, "context": 1, "file_name": 1, "content_image_main": 1, "content_image_subs": 1, "created_at": 1, "tags": 1, "comments": 1, "good": 1}
+        )
+
+
+        # ユーザー情報を取得
+        user_ref = cursor[0]['user_ref']
+        user_cursor = co_user.find_one(
+            filter={'uid': user_ref},
+            projection={'displayname': 1, 'photo_url': 1}
+        )
+
+        def join_user(x):
+            x['uid'] = user_ref
+            x['display_name'] = user_cursor['displayname']
+            x['photo_url'] = user_cursor['photo_url'] 
+            return x
+
+        dic_list = list(map(join_user, cursor))
+        dic_list = list(map(to_dict, dic_list))
+
+        return Response(dic_list[0])

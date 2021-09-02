@@ -49,7 +49,7 @@ python manage.py migrate
 
 ## DBの中身をGUIで参照する
 - mongo commpassをダウンロード  
-- mongodb://<user>:<pass>@localhost:27017  
+- mongodb://\<user\>:\<pass\>@localhost:27017  
 
 ※ userとpassはsettings.iniファイルを参照  
 

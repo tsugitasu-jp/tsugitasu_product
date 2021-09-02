@@ -1,0 +1,72 @@
+<!-- The core Firebase JS SDK is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/8.7.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.7.0/firebase-auth.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+<!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#available-libraries -->
+
+<html>
+  <h1>トップページ</h1>
+  <div id="firebaseui-auth-container"></div>
+</html>
+
+<script>
+  // Your web app's Firebase configuration
+  var firebaseConfig = {
+    apiKey: "AIzaSyBUBFnHLfz_evRY_w_hG7jvWfzG4h4GR3U",
+    authDomain: "drf-firebase-admin.firebaseapp.com",
+    projectId: "drf-firebase-admin",
+    storageBucket: "drf-firebase-admin.appspot.com",
+    messagingSenderId: "690248261249",
+    appId: "1:690248261249:web:31a187d0a27eb7c2763780",
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+
+  /* ログアウト */
+  /*firebase.auth().signOut()
+  .then(user => {
+    console.log("you logged out!");
+  }, err => {
+    console.log("you failed to log out");
+  });*/
+
+  /* Google Auth */
+  /*var provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({
+    'login_hint': 'user@example.com'
+  });*/
+
+  /* パス・メールサインアップ */
+  const res = firebase
+    .auth()
+    .createUserWithEmailAndPassword("abc@a.com", "abcdefg")
+    .catch(function (error) {
+      var errorCode = error.code;
+      var errorMessage = error.message;
+      console.log(errorMessage);
+    });
+
+  firebase.auth().onAuthStateChanged(function (user) {
+    console.log(user);
+    user.getIdToken().then(function (data) {
+      console.log(data);
+      return;
+      $.ajax({
+        url: "/api-v1/signup/",
+        type: "GET",
+        headers: {
+          Authorization: "JWT " + data,
+        },
+        //data: formData,
+        //dataType: "json",
+        success: function (data, textStatus, xhr) {
+          console.log(xhr.status);
+        },
+        error: function (data) {},
+      });
+    });
+  });
+</script>
