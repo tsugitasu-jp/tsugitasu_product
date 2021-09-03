@@ -13,7 +13,7 @@ from rest_framework.response import Response
 
 from apiv1.authentication import FirebaseAuthentication
 from apiv1.decorator import role_permission
-from config.settings.base import MEDIA_ROOT, tsugitasu_db, env
+from config.settings import MEDIA_ROOT, tsugitasu_db, env
 from constants import ROLE_NONE, ROLE_ALL, ROLE_TEACHER, ROLE_STUDENT
 from apiv1.material_func import contetn_upload_to_s3
 from pymongo import ASCENDING
@@ -26,7 +26,7 @@ co_user = tsugitasu_db['users_user']
 
 # 教材登録
 class MaterialCreateAPIView(APIView):
-    authentication_classes = [FirebaseAuthentication, ]
+    #authentication_classes = [FirebaseAuthentication, ]
 
     #@role_permission(ROLE_TEACHER)
     def post(self, request):

@@ -9,15 +9,17 @@ https://docs.djangoproject.com/en/2.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
-import configparser
-import os
-
 
 from drf_firebase_auth.utils import map_firebase_uid_to_username
 from pymongo import MongoClient
 
+import os
+import configparser
+
+SECRET_KEY = 'qn7y!5zf$u#l*z4*ndp6jq#l#u38=fm!60s40%+6p_9r$#+-^2'
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 conf = configparser.ConfigParser()
 settingsFilePath = os.path.join(BASE_DIR, "settings.ini")
@@ -25,12 +27,66 @@ conf.read_file(open(settingsFilePath, "r"))
 
 env = conf['os']['user']
 
+# 環境の切り分け
+if env == "test":
+    ALLOWED_HOSTS = ['*']
+
+    # SECURITY WARNING: don't run with debug turned on in production!
+    DEBUG = False
+
+    # Application definition
+    INSTALLED_APPS = [
+        'django.contrib.admin',
+        'django.contrib.auth',
+        'django.contrib.contenttypes',
+        'django.contrib.sessions',
+        'django.contrib.messages',
+        'django.contrib.staticfiles',
+        'drf_firebase_auth',
+        'rest_framework',
+        'users',
+        'apiv1',
+        'storages',
+        'corsheaders'
+    ]
+
+    # S3 config
+    AWS_STORAGE_BUCKET_NAME = conf['s3']['AWS_STORAGE_BUCKET_NAME']
+    AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+    AWS_S3_OBJECT_PARAMETERS = {
+        'CacheControl': conf['s3']['CacheControl-max-age'],
+    }
+    AWS_LOCATION = 'static'
+    AWS_DEFAULT_ACL = None
+
+    STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/'
+    STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+elif env == "local":
+    DEBUG = True
+
+    ALLOWED_HOSTS = ['*']
+
+    # Application definition
+    INSTALLED_APPS = [
+        'django.contrib.admin',
+        'django.contrib.auth',
+        'django.contrib.contenttypes',
+        'django.contrib.sessions',
+        'django.contrib.messages',
+        'django.contrib.staticfiles',
+        'drf_firebase_auth',
+        'rest_framework',
+        'users',
+        'apiv1',
+        'corsheaders'
+    ]
+
+    STATIC_URL = '/static/'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'qn7y!5zf$u#l*z4*ndp6jq#l#u38=fm!60s40%+6p_9r$#+-^2'
 
 # 追記
 REST_FRAMEWORK = {
@@ -158,7 +214,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+#STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 MEDIA_URL = '/media/'
@@ -171,7 +227,7 @@ AWS_SECRET_ACCESS_KEY = conf['aws']['AWS_SECRET_ACCESS_KEY']
 
 # CORS
 CORS_ORIGIN_ALLOW_ALL=False
-CORS_ORIGIN_WHITELIST = {
+CORS_ORIGIN_WHITELIST = (
     'http://localhost:8080',
     'http://127.0.0.1:8080',
-}
+)

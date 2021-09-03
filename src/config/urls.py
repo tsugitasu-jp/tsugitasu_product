@@ -16,35 +16,17 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.urls import include
+from django.views.generic import TemplateView
 
 from apiv1 import urls
 
-from django.views import generic
-from django import forms
-from users.models import PhotoModel
-
-class PhotoForm(forms.ModelForm):
-
-    class Meta:
-        model = PhotoModel
-        fields = '__all__'
-
-
-class Photo(generic.CreateView):
-    model = PhotoModel
-    form_class = PhotoForm
-    template_name = 'upload.html'
-    success_url = '/'
-
-    def get_context_data(self, **kwargs):
-        context = super(Photo, self).get_context_data(**kwargs) # はじめに継承元のメソッドを呼び出す
-        context["photos"] = PhotoModel.objects.all()
-        return context
+class IndexTemplateView(TemplateView):
+    template_name = "prac.html"
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    #path('admin/', admin.site.urls),
     path('api-v1/', include(urls)),
-    path('', Photo.as_view()),
+    path('', IndexTemplateView.as_view()),
 ]
 
 

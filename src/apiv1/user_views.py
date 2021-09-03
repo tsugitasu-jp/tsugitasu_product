@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from apiv1.authentication import FirebaseAuthentication
 from apiv1.decorator import role_permission
 from constants import ROLE_NONE, ROLE_ALL, ROLE_TEACHER, ROLE_STUDENT
-from config.settings.base import tsugitasu_db
+from config.settings import tsugitasu_db
 
 co_following = tsugitasu_db['users_following']
 co_follower = tsugitasu_db['users_follower']
