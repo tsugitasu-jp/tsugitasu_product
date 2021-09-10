@@ -120,7 +120,6 @@ class FirebaseAuthentication(authentication.TokenAuthentication):
                 f'_get_or_create_local_user - username: {username}'
             )
             try:
-
                 user = users.models.User.objects.create_user(
                     uid=firebase_user.uid
                 )

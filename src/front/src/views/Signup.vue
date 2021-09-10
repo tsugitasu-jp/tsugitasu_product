@@ -13,7 +13,7 @@
           </div>
         </div>
         <div class="input_container_right">
-          <input class="input" type="text" placeholder="ツギタス 太郎">
+          <input class="input" type="text" placeholder="ツギタス 太郎" v-model="name">
         </div>
       </div>
       <div class="input_container">
@@ -25,15 +25,15 @@
         </div>
         <div class="input_container_right">
           <div class="input_container_right_radio">
-            <input class="input_radio" type="radio" value="maile" id="maile" v-model="sex">
+            <input class="input_radio" type="radio" value="maile" id="maile" v-model="gender">
             <label class="label_radio" for="maile">男性</label>
           </div>
           <div class="input_container_right_radio">
-            <input class="input_radio" type="radio" value="femaile" id="femaile" v-model="sex">
+            <input class="input_radio" type="radio" value="femaile" id="femaile" v-model="gender">
             <label class="label_radio" for="femaile">女性</label>
           </div>
           <div class="input_container_right_radio">
-            <input class="input_radio" type="radio" value="other" id="other" v-model="sex">
+            <input class="input_radio" type="radio" value="other" id="other" v-model="gender">
             <label class="label_radio" for="other">その他</label>
           </div>
         </div>
@@ -68,7 +68,7 @@
           </div>
         </div>
         <div class="input_container_right">
-          <input class="input" type="text" placeholder="ツギタス市立ツギタス小学校">
+          <input class="input" type="text" placeholder="ツギタス市立ツギタス小学校" v-model="school">
         </div>
       </div>
       <div class="input_container">
@@ -79,7 +79,7 @@
           </div>
         </div>
         <div class="input_container_right">
-          <select class="input_select">
+          <select class="input_select" v-model="select_grade">
             <option value="1">１年</option>
             <option value="2">２年</option>
             <option value="3">３年</option>
@@ -200,7 +200,7 @@
           </div>
         </div>
         <div class="input_container_right">
-          <input class="input" type="text" placeholder="ツギタス太郎">
+          <input class="input" type="text" placeholder="ツギタス太郎" v-model="display_name">
         </div>
       </div>
       <div class="input_container" style="margin: 0 0 20px 0;">
@@ -249,6 +249,7 @@
 import FooterMenu from "../components/FooterMenu.vue";
 var firebase = require('firebase/app')
 require('firebase/auth')
+require('firebase/firestore')
 
 export default {
   components: { 
@@ -256,7 +257,13 @@ export default {
   },
   data() {
     return {
-      sex: "",
+      mail: "",
+      pass: "",
+      gender: "",
+      name: "",
+      display_name: "",
+      school: "",
+      select_grade: "",
       password:{
         isDisp:false,
       },
@@ -283,10 +290,36 @@ export default {
       var axios = this.axios;
       var router = this.$router;
       var route = this.$route;
+      var name = this.name;
+      var display_name = this.display_name;
+      var school = this.school;
+      var gender = this.gender;
+      var grade = this.select_grade;
+
+      // Firestoreのオブジェクト取得
+      var db = firebase.default.firestore();
       firebase.default.auth().createUserWithEmailAndPassword(this.mail, this.pass)
       .then(function(user){
+        var create_obj = {
+          uid: user.user.uid,
+          name: name,
+          displayname: display_name,
+          school: school,
+          gender: gender,
+          grade: grade,
+        }
+        var set_django_data = {
+          display_name: display_name,
+          photo_url: "",
+        }
         user.user.getIdToken().then(function (token) {
-          console.log(token)
+          db.collection("users").add(create_obj)
+          .then((doc) => {
+            console.log(`追加に成功しました (${doc.id})`);
+          })
+          .catch((error) => {
+            console.log(`追加に失敗しました (${error})`);
+          });
           
           /* django側に登録 */
           let config = {
@@ -295,7 +328,7 @@ export default {
             },
           };
           axios
-          .get('http://127.0.0.1:8000/api-v1/signup/', config)
+          .post('http://127.0.0.1:8000/api-v1/make_account/', set_django_data, config)
           .then(function() {
               if (route.query.redirect){
                 router.push(route.query.redirect)

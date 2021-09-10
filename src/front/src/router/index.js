@@ -16,6 +16,7 @@ import BaseMenu from "../views_menu/BaseMenu.vue";
 import SearchMenu from "../views_menu/SearchMenu.vue";
 var firebase = require('firebase/app')
 require('firebase/auth')
+require('firebase/firestore')
 
 Vue.use(VueRouter);
 
@@ -72,7 +73,7 @@ const routes = [
       default: MyPage,
       menu: SearchMenu
     },
-    meta: { requiresAuth: true, validUid: true }
+    meta: { requiresAuth: true, checkUid: true, follow: true }
   },
   {
     path: "/filter/",
@@ -83,7 +84,7 @@ const routes = [
     }
   },
   {
-    path: "/:cid/:bid/:ver/",
+    path: "/:cid/b:bid/v:vid/",
     name: "MaterialsDescription",
     components: {
       default: MaterialsDescription,
@@ -96,7 +97,8 @@ const routes = [
     components: {
       default: UserInfo,
       menu: SearchMenu
-    }
+    },
+    //meta: { user_info_f: true }
   },
 ];
 
@@ -110,14 +112,38 @@ router.beforeEach((to, from, next) => {
   let checkLogin = to.matched.some(record => record.meta.checkLogin)
   let requiresAuth = to.matched.some(record => record.meta.requiresAuth)
   let validUid = to.matched.some(record => record.meta.validUid)
-  var unsubscribe = firebase.default.auth().onAuthStateChanged((user) => {
+  var displayname;
+  var db = firebase.default.firestore();
+
+  /*
+  * user_info_f: 
+  * requiresAuth: jwt認証必須
+  *     - checkLogin: 認証してたらワークスペースにリダイレクト
+  *     - validUid: urlパラメータのuid=認証ユーザのuidでなければ404
+  *     - follow: follow数をパラメータに組み込む
+  */
+
+  /* 
+  * チェック1: urlパラメータのuidが存在するかどうか
+  * チェック2: urlパラメータのuidが認証ユーザのuidならマイページにリダイレクト
+  * チェック3: follow数、follower数の取得
+  */
+
+  firebase.default.auth().onAuthStateChanged((user) => {
     if (checkLogin && user) {
       console.log("checklogin&user")
       // サインアップ・ログインはログインユーザには表示させない
-      // => ワークスペースにリダイレクト
-      next({
-        path: '/mypage/' + user.uid + '/management',
-      })
+      if(to.query.backuri){
+        // => 戻り先にリダイレクト
+        next({
+          path: to.query.backuri,
+        })
+      }else{
+        // => ワークスペースにリダイレクト
+        next({
+          path: '/mypage/' + user.uid + '/management',
+        })
+      }
     }
     if (requiresAuth) {
       // このルートはログインされているかどうか認証が必要です。
@@ -125,20 +151,28 @@ router.beforeEach((to, from, next) => {
       if (!user) {
         next({
           path: '/login',
-          query: { redirect: to.fullPath }
+          query: { redirect: to.fullPath },
         })
       } else {
         // uidがログインユーザのものと同一か検証
         if (validUid && user.uid != to.params.uid) {
           return
         }
-        next()
+        // ユーザ情報の取得
+        db.collection("users").where("uid", "==", to.params.uid).limit(1)
+        .get()
+        .then((querySnapshot) => {
+          querySnapshot.forEach((doc) => {
+            displayname = doc.data()['displayname']
+            to.query.displayname = displayname
+            next()
+          });
+        });
+        return
       }
     } else {
       next() // next() を常に呼び出すようにしてください!
     }
-    // リスナー解除
-    unsubscribe();
   });  
 })
 

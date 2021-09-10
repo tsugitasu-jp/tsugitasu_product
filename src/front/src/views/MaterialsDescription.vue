@@ -1,34 +1,34 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.2.2/jszip.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.3/FileSaver.min.js"></script>
+
 <template>
   <div class="materials_description_container">
     <div class="materials_main_description">
-      <div class="materials_main_description_image">
+      <div class="materials_main_description_image" :style="{ backgroundImage: 'url(http://127.0.0.1/' + main_material.content_image_main + ')' }">
       </div>
       <div class="materials_main_description_text">
         <div class="materials_main_description_text_title">
-          小学校1年生 数の数え方と足し算
+          {{ main_material.title }}
         </div>
         <div class="materials_main_description_text_tags_container">
           <div class="star_tag">
-            ★ 2021
+            ★ ???
           </div>
-          <div class="material_tag">
-            足し算
-          </div>
-          <div class="material_tag">
-            算数入門
+          <div class="material_tag_container" v-for="tag in main_material.tags" :key="tag.id">
+            <div class="material_tag">
+              {{tag}}
+            </div>
           </div>
         </div>
         <div class="materials_main_description_text_date">
-          2020.1.25
+          {{main_material.created_at}}
         </div>
         <div class="materials_main_description_text_description">
-          <p>小学生１年生の算数の教育に入る前の数の概念を教える際に使う教材です。</p>
-          <p>かわいいイラストを用いて、自動の皆に興味を持ってもらえるように工夫しています。学校現場だけでなく、家庭等でも使ってもらえると嬉しいです。</p>
-          <p>テンポよくスライドと一緒に児童には答えてもらうような使い方を授業では想定しています。</p>
+          <p v-html="main_material.context" style="display: block"></p>
         </div>
         <div class="materials_main_description_text_author">
           <div class="author">
-            Tatsuya Okazaki
+            {{ main_material.displayname }}
           </div>
           <div class="follow_btn">
             + 作成者をフォロー
@@ -37,25 +37,22 @@
       </div>
     </div>
     <div class="materials_slide_description_container">
-      <div class="slide">
-        1
-      </div>
-      <div class="slide">
-        2
-      </div>
-      <div class="slide">
-        3
+      <div class="slide-wrapper" v-for="img in main_material.content_image_subs" :key="img.id">
+        <div class="slide" :style="{ backgroundImage: 'url(http://127.0.0.1/' + img + ')' }">
+          
+        </div>
       </div>
     </div>
     <div class="btn_container">
       <div class="base_btn_style keep_btn">
         マイページにキープする
       </div>
-      <div class="base_btn_style dl_btn">
+      <div class="base_btn_style dl_btn" @click="getFiles">
         この教材をダウンロード
       </div>
+      {{progress.rate}}
       <div class="base_btn_style comment_btn">
-        作者のコメントを送る
+        作者にコメントを送る
       </div>
     </div>
     <div class="comments_content_container">
@@ -160,34 +157,21 @@
         </div>
       </div>
       <div class="branch_tree_container">
-        <div class="own_material">
-          <div class="own_material_image">
-            スライド
-          </div>
-          <div class="own_material_title">
-            <div class="left_top" />
-            <div class="right_top" />
-            <div class="right_bottom" />
-            <div class="left_bottom" />
-            <p>オリジナル</p>
-          </div>
-        </div>
         <div class="branch_materials_cotainer">
-          <div class="branch_materials_row_cotainer" v-for="materials_row in disp_branch" :key="materials_row.id">
-            <div class="branch_materials_container" v-for="materials in materials_row" :key="materials.id">
-              <div class="branch_border_container">
-                <div v-if="materials.top" class="top" />
-                <div v-if="materials.right" class="right" />
-                <div v-if="materials.left" class="left" />
-                <div v-if="materials.bottom" class="bottom" />
+          <div class="branch_materials_row_cotainer" v-for="(materials_row, i) in disp_branch" :key="materials_row.id">
+            <div class="branch_materials_container" v-for="(materials, j) in materials_row" :key="materials.id">
+              <div v-if="(materials_row.id == i) && (materials.id == j)" class="own_material" >
+                <div class="own_material_image">
+                  スライド
+                </div>
               </div>
-              <div class="branch_material_title">
-                <div v-if="materials.title != ''" class="left_top" />
-                <div v-if="materials.title != ''" class="right_top" />
-                <div v-if="materials.title != ''" class="right_bottom" />
-                <div v-if="materials.title != ''" class="left_bottom" />
-                <p v-if="materials.title != ''" >{{materials.title}}</p>
-                <div v-if="materials.title != ''" class="branch_material_author">
+              <div class="branch_material_mes">
+                <div v-if="materials.mes != ''" class="left_top" />
+                <div v-if="materials.mes != ''" class="right_top" />
+                <div v-if="materials.mes != ''" class="right_bottom" />
+                <div v-if="materials.mes != ''" class="left_bottom" />
+                <p v-if="materials.mes != ''" >{{materials.mes}}</p>
+                <div v-if="materials.mes != ''" class="branch_material_author">
                   <div class="author_image">
                   </div>
                   <div class="author_date_container">
@@ -195,11 +179,18 @@
                       {{materials.author}}
                     </div>
                     <div class="date">
-                      {{materials.date}}
+                      {{materials.created_at}}
                     </div>
                   </div>
                 </div>
               </div>
+              <div class="branch_border_container">
+                <div v-if="materials.top" class="top" />
+                <div v-if="materials.right" class="right" />
+                <div v-if="materials.left" class="left" />
+                <div v-if="materials.bottom" class="bottom" />
+              </div>
+              
             </div>
           </div>
         </div>
@@ -211,6 +202,17 @@
 
 <script>
 import FooterMenu from "../components/FooterMenu.vue";
+var AWS = require('aws-sdk');
+const bucket_name = "tsugitasu-static"
+var zip = new JSZip();
+
+AWS.config.update(
+  {
+    "accessKeyId": "AKIAQ7J3FIK6FGBSTY7Q",
+    "secretAccessKey": "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",
+  }
+);
+var s3 = new AWS.S3();
 
 export default {
   components: { 
@@ -218,141 +220,116 @@ export default {
   },
   data() {
     return {
-      disp_branch:[
-        [
-          {
-            top:false,
-            right:true,
-            bottom:true,
-            left:true,
-            title:"教材1-1",
-            author:"Tatsuya Okazaki",
-            date:"1ヶ月前"
-          },
-          {
-            top:false,
-            right:true,
-            bottom:true,
-            left:true,
-            title:"教材1-2",
-            author:"Tatsuya Okazaki",
-            date:"1ヶ月前"
-          },
-          {
-            top:false,
-            right:true,
-            bottom:true,
-            left:true,
-            title:"教材1-3",
-            author:"Tatsuya Okazaki",
-            date:"1ヶ月前"
-          },
-          {
-            top:false,
-            right:true,
-            bottom:false,
-            left:true,
-            title:"教材1-4",
-            author:"Tatsuya Okazaki",
-            date:"1ヶ月前"
-          },
-        ],
-        [
-          {
-            top:true,
-            right:false,
-            bottom:true,
-            left:false,
-            title:"",
-            author:"",
-            date:""
-          },
-          {
-            top:true,
-            right:false,
-            bottom:true,
-            left:false,
-            title:"",
-            author:"",
-            date:""
-          },
-          {
-            top:true,
-            right:true,
-            bottom:false,
-            left:false,
-            title:"教材2-3",
-            author:"Tatsuya Okazaki",
-            date:"1ヶ月前"
-          },
-          {
-            top:false,
-            right:true,
-            bottom:false,
-            left:true,
-            title:"教材2-4",
-            author:"Tatsuya Okazaki",
-            date:"1ヶ月前"
-          },
-        ],
-        [
-          {
-            top:true,
-            right:false,
-            bottom:true,
-            left:false,
-            title:"",
-            author:"",
-            date:""
-          },
-          {
-            top:true,
-            right:true,
-            bottom:false,
-            left:false,
-            title:"教材3-2",
-            author:"Tatsuya Okazaki",
-            date:"1ヶ月前"
-          },
-          {
-            top:false,
-            right:true,
-            bottom:false,
-            left:true,
-            title:"教材3-3",
-            author:"Tatsuya Okazaki",
-            date:"1ヶ月前"
-          },
-        ],
-        [
-          {
-            top:true,
-            right:true,
-            bottom:false,
-            left:false,
-            title:"教材4-1",
-            author:"Tatsuya Okazaki",
-            date:"1ヶ月前"
-          },
-          {
-            top:false,
-            right:true,
-            bottom:false,
-            left:true,
-            title:"教材4-2",
-            author:"Tatsuya Okazaki",
-            date:"1ヶ月前"
-          },
-        ]
-      ]
+      disp_branch:[],
+      main_material: {
+        "mes": "",
+        "context": "",
+        "content_image_main": "",
+        "tags": [],
+        "displayname": "",
+        "created_at": "1999.01.01",
+      },
+      progress: {"rate": ""},
     };
   },
   created() {
+    this.init()
   },
   computed: {
   },
   methods: {
-    
+    init() {
+      // 教材の取得
+      const cid = this.$route.params.cid
+      const bid = this.$route.params.bid
+      const vid = this.$route.params.vid
+      this.axios
+        .get(`http://127.0.0.1:8000/api-v1/content/${cid}/b${bid}/v${vid}/`)
+        .then((response) => {
+          console.log(response.data)
+          const main_url = `media/${cid}/b${bid}/v${vid}/`
+          const c_at = response.data['created_at'].split(/[-T]/)
+          const image_subs = response.data['content_image_subs']
+          
+          this.$set(this.main_material, 'title', response.data.title)
+          this.$set(this.main_material, 'context', response.data.context)
+          this.$set(this.main_material, 'content_image_main', main_url + response.data.content_image_main)
+          this.$set(this.main_material, 'content_image_subs', main_url + response.data['content_image_subs'])
+          this.$set(this.main_material, 'tags', response.data['tags'])
+          this.$set(this.main_material, 'displayname', response.data['displayname'])
+          this.$set(this.main_material, 'created_at', `${c_at[0]}.${c_at[1]}.${c_at[2]}`)
+          this.$set(this.main_material, 'file_path', response.data.content_image_main)
+
+          var map_images = image_subs.map(function(img) {
+            return main_url + img
+          });
+
+          this.$set(this.main_material, 'content_image_subs', map_images)
+          
+          console.log(this.main_material)
+        })
+        .catch((error) => {
+            console.log(error)
+            // 404ページに遷移(とりあえずHome)
+            //this.$router.push({ name: 'Home'})
+        })
+      
+      /* 履歴(教材ツリーの取得) */
+      this.axios
+        .get(`http://127.0.0.1:8000/api-v1/get_content_tree/${cid}/`)
+        .then((response) => {
+          console.log(response.data)
+          for(let i=0;i < response.data['contents'].length;i++){
+            this.disp_branch.splice(i, this.disp_branch.length)
+            this.disp_branch.push(response.data['contents'][i])
+          }
+        });
+    },
+    requestToS3(path, num, e_num){
+      return new Promise((resolve, reject) => {
+        s3.getObject({
+          Bucket: bucket_name, 
+          Key: path
+        }, (err, data) => {
+          if (err){
+            resolve()
+          } else {
+            this.$set(this.progress, 'rate', `${num}/${e_num}ダウンロード開始`)
+            const blob = new Blob([data.Body], {type: data.ContentType});
+            const name = path.split('/').slice(-1)[0]
+            zip.file(name, blob);
+            resolve()
+          }
+        })
+      })
+    },
+    getFiles() {
+      var promises = [];
+      var pathes = [this.main_material.content_image_main]
+      for (const path of this.main_material.content_image_subs){
+        pathes.push(path);
+      }
+
+      for(let i = 0; i < pathes.length; i++) {
+        promises.push(this.requestToS3(pathes[i], i+1, pathes.length))
+      }
+      
+      return Promise.all(promises)
+        .then(() => {
+          console.log("圧縮")
+          zip.generateAsync({type:"blob"})
+            .then((content) =>{
+              saveAs(content, "content.zip");
+              this.$set(this.progress, 'rate', `${pathes.length}/${pathes.length}ダウンロード完了`)
+            });
+        })
+        .catch((res) => {
+          console.log(`Error Getting Templates: ${res}`);
+        })
+        .finally(() => {
+          zip = new JSZip();
+        });
+    }
   },
 };
 </script>
@@ -372,7 +349,9 @@ export default {
     align-items: center;
     justify-content: center;
     .materials_main_description_image{
-      background-color: chartreuse;
+      //background-color: chartreuse;
+      background-size:contain;
+      background-repeat: no-repeat;
       width: 350px;
       height: 210px;
       margin: 20px;
@@ -478,7 +457,10 @@ export default {
     overflow-x: scroll;
     .slide{
       flex-shrink: 0;
-      background-color: darkorange;
+      //background-color: darkorange;
+      background-position: center;
+      background-size:contain;
+      background-repeat: no-repeat;
       width: 300px;
       height: 170px;
       margin: 10px;
@@ -700,7 +682,7 @@ export default {
           top: 0;
           box-shadow: #00000033 2px 3px 6px;
         }
-        .own_material_title{
+        .own_material_mes{
           position: absolute;
           width: auto;
           height: 50px;
@@ -816,7 +798,7 @@ export default {
                 left: 0;
               }
             }
-            .branch_material_title{
+            .branch_material_mes{
               position: relative;
               width: 250px;
               height: 50px;

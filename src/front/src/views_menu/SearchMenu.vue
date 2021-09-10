@@ -9,7 +9,7 @@
         <div class="header_text" :class="SideMenuHighlight.Search.header?'header_text_highlight':'header_text_no_highlight'">
           Search
         </div>
-        <div class="link_container" @click="router_to('/filter/')">
+        <div class="link_container" @click="router_to('/filter/'); SideMenu_trg_icon_click()">
           <img v-if="SideMenuHighlight.Search.Material" class="link_img" src="../assets/icons/side_menu_black/search.svg" alt="search_icon_black">
           <img v-else class="link_img" src="../assets/icons/side_menu_gray/search.svg" alt="search_icon_black">
           <span class="link_text" :class="SideMenuHighlight.Search.Material?'link_text_highlight':'link_text_no_highlight'">教材を探す</span>
@@ -29,12 +29,12 @@
         <div class="header_text" :class="SideMenuHighlight.MySpace.header?'header_text_highlight':'header_text_no_highlight'">
           My Space
         </div>
-        <div class="link_container" @click="mymanagement()">
+        <div class="link_container" @click="mymanagement(); SideMenu_trg_icon_click()">
           <img v-if="SideMenuHighlight.MySpace.Material" class="link_img" src="../assets/icons/side_menu_black/book-open.svg" alt="search_icon_black">
           <img v-else class="link_img" src="../assets/icons/side_menu_gray/book-open.svg" alt="search_icon_black">
           <span class="link_text" :class="SideMenuHighlight.MySpace.Material?'link_text_highlight':'link_text_no_highlight'">マイ教材・授業</span>
         </div>
-        <div class="link_container" @click="myupload()">
+        <div class="link_container" @click="myupload(); SideMenu_trg_icon_click()">
           <img v-if="SideMenuHighlight.MySpace.Upload" class="link_img" src="../assets/icons/side_menu_black/paper-plane.svg" alt="search_icon_black">
           <img v-else class="link_img" src="../assets/icons/side_menu_gray/paper-plane.svg" alt="search_icon_black">
           <span class="link_text" :class="SideMenuHighlight.MySpace.Upload?'link_text_highlight':'link_text_no_highlight'">投稿・アップロード</span>
@@ -44,7 +44,7 @@
           <img v-else class="link_img" src="../assets/icons/side_menu_gray/project.svg" alt="search_icon_black">
           <span class="link_text" :class="SideMenuHighlight.MySpace.Manage?'link_text_highlight':'link_text_no_highlight'">教材・授業管理</span>
         </div>
-        <div class="link_container" @click="myaccount()">
+        <div class="link_container" @click="myaccount(); SideMenu_trg_icon_click()">
           <img v-if="SideMenuHighlight.MySpace.Account" class="link_img" src="../assets/icons/side_menu_black/settings.svg" alt="search_icon_black">
           <img v-else class="link_img" src="../assets/icons/side_menu_gray/settings.svg" alt="search_icon_black">
           <span class="link_text" :class="SideMenuHighlight.MySpace.Account?'link_text_highlight':'link_text_no_highlight'">マイアカウント</span>

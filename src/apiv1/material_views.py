@@ -39,14 +39,14 @@ class MaterialCreateAPIView(APIView):
 
         input_dic['title'] = request.data['title']
         input_dic['context'] = request.data['context']
-        input_dic['tag[]'] = request.data.getlist('tag[]')
+        input_dic['tags'] = request.data.getlist('tag[]')
         input_dic['tag_flag'] = request.data['tag_flag']
 
         input_dic['mes'] = "オリジナル"
         input_dic['user_ref'] = user.uid
         input_dic['parent'] = input_dic['derived'] = None
         input_dic['is_original'] = True
-        input_dic['comment[]'] = []
+        input_dic['comments'] = []
        
         input_dic['is_latest'] = True
         input_dic['good'] = input_dic['read'] = 0
@@ -72,14 +72,14 @@ class MaterialCreateAPIView(APIView):
         input_dic['content_image_main'] = f_manager.main_img_save_to_media()
 
         # 副画像の保存
-        input_dic['content_image_sub[]'] = f_manager.sub_imgs_save_to_media()
+        input_dic['content_image_subs'] = f_manager.sub_imgs_save_to_media()
 
         # fileをs3に転送
         if env == "test":
             f_manager.contetns_upload_to_s3(
                 [input_dic['file_name'], 
                 input_dic['content_image_main'], 
-                *input_dic['content_image_sub[]']]
+                *input_dic['content_image_subs']]
             )
 
         # localに作成したファイルを削除
@@ -95,7 +95,8 @@ class MaterialCreateAPIView(APIView):
 # 教材の木(history-tree)を取得 (機能番号22)
 class HistoryTreeGetAPIView(APIView):
     authentication_classes = []
-    keys = ["bid", "mes", "ver", "created_at", "display_name", "photo_url", "depth"]
+    keys = ["_id", "bid", "mes", "ver", "created_at", "author", "parent",
+        "photo_url", "depth", "is_latest", "derived", "left", "right", "top", "bottom"]
     
     @role_permission(ROLE_NONE)
     def get(self, request, cid):
@@ -110,6 +111,7 @@ class HistoryTreeGetAPIView(APIView):
                 )['ver']
             # 派生元のver値+ノードのver値
             x['depth'] = x['ver'] + d_ver
+
             return {key: x[key] for key in self.keys}
 
         # bidの値毎に値を取得
@@ -118,7 +120,7 @@ class HistoryTreeGetAPIView(APIView):
         while True:
             cursor = co_material.find(
                 filter={'bid': bid}, 
-                projection={'user_ref': 1, 'bid': 1, 'ver': 1, 'derived':1 , 'mes': 1, 'created_at': 1}, # cidは詳細ページで得られるので要らない
+                projection={'user_ref': 1, 'bid': 1, 'ver': 1, 'derived':1 , 'mes': 1, 'created_at': 1, 'is_latest': 1, 'parent': 1}, # cidは詳細ページで得られるので要らない
                 sort=[('created_at', ASCENDING)]
             )
             if cursor.count() == 0:
@@ -132,26 +134,76 @@ class HistoryTreeGetAPIView(APIView):
             )
             #print(user)
             def join_user(x):
-                x['display_name'] = user['displayname']
-                x['photo_url'] = user['photo_url'] 
+                x['author'] = user['displayname']
+                x['photo_url'] = user['photo_url']
                 return x
+            def consider_node(x):
+                x['left'] = True
+                x['right'] = True
+                x['top'] = False
+                x['bottom'] = False
+                x['_id'] = str(x['_id'])
+                #if x['is_latest']:
+                #    x['right'] = False
+
+                return x
+                
             dic_lst = list(map(join_user, cursor))
+            dic_lst = list(map(consider_node, dic_lst))
             dic_lst = list(map(to_depth, dic_lst))
+            
             contents.append(dic_lst)
             bid += 1
         #print(contents)
-        return Response(contents)
+
+        for i, content in enumerate(contents):
+            if i == 0:
+                continue
+            # depth分の配列要素を調整で差し込む
+            for j in range(content[0]['depth'] - 1):
+                contents[i].insert(0, 
+                    {
+                        "top": False,
+                        "right": False,
+                        "bottom": False,
+                        "left": False,
+                        "mes":"",
+                        "author":"",
+                        "created_at":"",
+                        "derived": "",
+                        "parent": "",
+                    },
+                )
+                
+            for k, elem in enumerate(content):
+               if (elem['derived'] is not None) and (elem['parent'] is None):
+                    # depth探索
+                    target_lst = contents[0]
+                    target_num = -1
+                    for j, dic in enumerate(target_lst):
+                        if dic['_id'] == elem['derived']:
+                            target_num = j
+                            break
+                    contents[0][target_num]['bottom'] = True
+                    contents[i][k-1]['right'] = True
+
+                    # top/bottom設定(対象のbidより低いbidの同一depthに関し、top/bottom設定)
+                    for j in range(i, 0, -1):
+                        contents[j][k-1]['top'] = contents[j][k-1]['bottom'] = True
+                    break
+       
+        return Response({
+            "contents": contents,
+        })
 
 
 # 詳細表示用の教材データを取得 (機能番号21)
 class GetMaterialAPIView(APIView):
     authentication_classes = []
-    keys = ["mes", "uid", "display_name", "photo_url", "title", "context", "file_name", "content_image_main", "content_image_subs", "created_at", "tags", "comments", "good",]
+    keys = ["mes", "uid", "displayname", "photo_url", "title", "context", "file_name", "content_image_main", "content_image_subs", "created_at", "tags", "comments", "good",]
 
     @role_permission(ROLE_NONE)
     def get(self, request, cid, bid, ver):
-        user = request.user
-
         def to_dict(x):
             return {key: x[key] for key in self.keys}
 
@@ -170,7 +222,7 @@ class GetMaterialAPIView(APIView):
 
         def join_user(x):
             x['uid'] = user_ref
-            x['display_name'] = user_cursor['displayname']
+            x['displayname'] = user_cursor['displayname']
             x['photo_url'] = user_cursor['photo_url'] 
             return x
 
