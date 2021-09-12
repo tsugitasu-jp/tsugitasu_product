@@ -5,7 +5,7 @@
       </div>
       <div class="profile_description">
         <div class="user_name">
-          ユーザーネーム
+          {{user.displayname}}
         </div>
         <div class="role">
           肩書き / 教員 / 野球部顧問 / 進路指導部長
@@ -21,7 +21,7 @@
           </div>
           <div class="content_number">
             <div class="number">
-              12
+              {{user.follower_num}}
             </div>
             <div class="label">
               フォロワー
@@ -29,7 +29,7 @@
           </div>
           <div class="content_number">
             <div class="number">
-              12
+              {{user.follow_num}}
             </div>
             <div class="label">
               フォロー中
@@ -44,7 +44,7 @@
           <p>example@example.com</p>
           <p>数学担当</p>
         </div>
-        <div class="edit_btn">
+        <div class="edit_btn" @click="follow_page_user()">
           フォローする
         </div>
       </div>
@@ -92,10 +92,10 @@
         </div>
         <div class="materials_follow_follower" v-for="follower in disp_list.follower" :key="follower.id">
           <div class="user_info_btn">
-            <div class="user_image">
+            <div class="user_image" :style="{ backgroundImage: 'url(http://127.0.0.1/media/' + follower.photo_url + ')' }" @click="jump_to(follower.uid)">
             </div>
             <div class="user_name">
-              {{follower.username}}
+              {{follower.displayname}}
             </div>
           </div>
           <div class="user_info_btn">
@@ -117,10 +117,10 @@
         </div>
         <div class="materials_follow_follower" v-for="follow in disp_list.follow" :key="follow.id">
           <div class="user_info_btn">
-            <div class="user_image">
+            <div class="user_image" :style="{ backgroundImage: 'url(http://127.0.0.1/media/' + follow.photo_url + ')' }" @click="jump_to(follow.uid)">
             </div>
             <div class="user_name">
-              {{follow.username}}
+              {{follow.displayname}}
             </div>
           </div>
           <div class="user_info_btn">
@@ -143,6 +143,8 @@
 
 <script>
 import FooterMenu from "../components/FooterMenu.vue";
+var firebase = require('firebase/app')
+require('firebase/auth')
 
 export default {
   components: { 
@@ -160,20 +162,8 @@ export default {
             image:"https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60"
           },
         ],
-        follower:[
-          {
-            username:"フォロワーユーザーネーム",
-            materials:25,
-            follower:12
-          },
-        ],
-        follow:[
-          {
-            username:"フォローユーザーネーム",
-            materials:35,
-            follower:42
-          },
-        ]
+        follower:[],
+        follow:[]
       },
       style:{
         btn:{
@@ -186,14 +176,63 @@ export default {
           follower:"left: 1000px;",
           follow:"left: 2000px;",
         }
+      },
+      user: {
+        "displayname": this.$route.query.displayname,
+        "follow_num": 0,
+        "follower_num": 0
       }
     };
   },
   created() {
+    this.init()
   },
   computed: {
   },
+  watch: {
+    '$route': function (to, from) {
+      if (to.path !== from.path) {
+        this.init();
+      }
+    }
+  },
   methods: {
+    init () {
+      this.btn_style_change('materials')
+      var db = firebase.default.firestore();
+      db
+      .collection("users").where("uid", "==", this.$route.params.uid).limit(1)
+      .get()
+      .then((querySnapshot) => {
+        if (querySnapshot.empty){
+          // 404ページに遷移(とりあえずHome)
+          this.$router.push({ name: 'Home'})
+        }
+        querySnapshot.forEach((doc) => {
+          firebase.default.auth().onAuthStateChanged((authuser) => {
+            if (authuser){
+              this.$route.query.status = true
+            }else{
+              this.$route.query.status = false
+            }
+            if (authuser&&authuser.uid == this.$route.params.uid){
+                this.$router.push({ name: 'MyPage', params: {uid: this.$route.params.uid}})
+            }
+          });
+          this.$set(this.user, 'displayname', doc.data()['displayname'])
+        });
+      });
+    
+      this.axios
+        .get('http://127.0.0.1:8000/api-v1/follow/num/'+this.$route.params.uid + "/")
+        .then((response) => {
+          this.$set(this.user, 'follow_num', response.data.follow)
+          this.$set(this.user, 'follower_num', response.data.follower)
+        })
+        .catch(function(error) {
+            console.log(error)
+        })
+    },
     btn_style_change (btn_kinds) {
       if(btn_kinds == "materials"){
         this.style.btn.materials = "background-color: #F23D75;color: #FFFFFF;";
@@ -204,6 +243,7 @@ export default {
         this.style.box.follower = "left:2000px";
         
       }else if(btn_kinds == "follow"){
+        this.change_follow()
         this.style.btn.materials = "background-color: transparent;color: #000000;";
         this.style.box.materials = "left:-2000px";
         this.style.btn.follow = "background-color: #F23D75;color: #FFFFFF;";
@@ -212,6 +252,7 @@ export default {
         this.style.box.follower = "left:-1000px";
         
       }else if(btn_kinds == "follower"){
+        this.change_follower();
         this.style.btn.materials = "background-color: transparent;color: #000000;";
         this.style.box.materials = "left:-1000px";
         this.style.btn.follow = "background-color: transparent;color: #000000;";
@@ -219,6 +260,60 @@ export default {
         this.style.btn.follower = "background-color: #F23D75;color: #FFFFFF;";
         this.style.box.follower = "left:0px";
       }
+    },
+    follow_page_user(){
+      var router = this.$router
+      var route = this.$route
+      // ログイン判定
+      if (this.$route.query.status){
+        const uid = this.$route.params.uid
+        var axios = this.axios
+        firebase.default.auth().onAuthStateChanged((user) => {
+          user.getIdToken().then((token) => {
+            const config = {
+              headers: {
+                'Authorization': "JWT " + token,
+              },
+            };
+            axios
+            .get('http://127.0.0.1:8000/api-v1/follow/create/' + uid, config)
+            .then(() => {
+              alert("フォローしました")
+              this.$set(this.user, 'follower_num', this.user.follower_num+1)
+            })
+            .catch(function(error) {
+                console.log(error)
+            })
+          })
+        });
+      }else{
+        // ログインしていないのでログイン->リダイレクト
+        console.log(router)
+        router.push({path: "/login", query: {backuri: route.fullPath}})
+      }
+    },
+    change_follow(){
+      this.axios
+      .get('http://127.0.0.1:8000/api-v1/follow/get/list/'+this.$route.params.uid + "/")
+      .then((response) => {
+        this.$set(this.disp_list, 'follow', response.data.follow_list)
+      })
+      .catch(function(error) {
+        console.log(error)
+      })
+    },
+    change_follower(){
+      this.axios
+      .get('http://127.0.0.1:8000/api-v1/follower/get/list/'+this.$route.params.uid + "/")
+      .then((response) => {
+        this.$set(this.disp_list, 'follower', response.data.follower_list)
+      })
+      .catch(function(error) {
+        console.log(error)
+      })
+    },
+    jump_to(uid){
+      this.$router.push({ name: 'UserInfo', params: {uid: uid}})
     }
   },
 };
@@ -447,6 +542,10 @@ export default {
             margin-right: 20px;
             border-radius: 99px;
             background-color: red;
+            background-size:contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            cursor: pointer;
           }
           .user_name{
             font-size: 20px;

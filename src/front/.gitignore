@@ -2,6 +2,8 @@
 node_modules
 /dist
 
+# aws
+aws-credentials.json
 
 # local env files
 .env.local

@@ -4,6 +4,7 @@ import axios from 'axios' //追記
 import VueAxios from 'vue-axios' //追記
 import router from "./router"
 
+var AWS = require('aws-sdk');
 var firebase = require("firebase/app")
 
 const firebaseConfig = {
@@ -17,8 +18,15 @@ const firebaseConfig = {
 
 firebase.default.initializeApp(firebaseConfig);
 
+AWS.config.update(
+  {
+    "accessKeyId": "AKIAQ7J3FIK6FGBSTY7Q",
+    "secretAccessKey": "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",
+  }
+);
+
 Vue.config.productionTip = false
-Vue.use(VueAxios, axios, firebase) //追記
+Vue.use(VueAxios, axios, firebase, AWS) //追記
 
 new Vue({
   router,
