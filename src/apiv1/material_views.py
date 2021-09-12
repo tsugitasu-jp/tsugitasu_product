@@ -271,3 +271,27 @@ class GetLatestMaterialsAPIView(APIView):
         dic_list = list(map(to_dict, dic_list))
 
         return Response(dic_list)
+
+
+# いいね数のカウント(機能番号26)
+class AddGoodAPIView(APIView):
+    authentication_classes = [FirebaseAuthentication,]
+    # keys = ["cid", "bid", "context", "ver", "title", "content_image_main", "tags", "created_at", "display_name", "photo_url"]
+
+    def get(self, request, cid, bid, ver):
+        user = request.user
+        # uid非保持の場合はいいねを押せないようにする
+        if user.uid is None:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        # 教材の情報を取得
+        cursor = co_material.find(filter={'cid': cid, 'bid': bid, 'ver': ver, 'good_contents': {'$in': [user.uid]}})
+
+        if cursor.count() == 0:
+            result = co_material.update_one({'cid': cid, 'bid': bid, 'ver': ver}, {'$inc': {'good': 1}, '$push': {'good_contents': user.uid}})
+        elif cursor.count() == 1:
+            result = co_material.update_one({'cid': cid, 'bid': bid, 'ver': ver}, {'$inc': {'good': -1}, '$pull': {'good_contents': user.uid}})
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(status=status.HTTP_200_OK)
