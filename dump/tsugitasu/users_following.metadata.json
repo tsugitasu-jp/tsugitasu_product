@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"_f":{"$numberInt":"1"},"_t":{"$numberInt":"1"}},"name":"_f_1__t_1","unique":true}],"uuid":"6dc32837debd4765b6ad4d462958f144","collectionName":"users_following","type":"collection"}

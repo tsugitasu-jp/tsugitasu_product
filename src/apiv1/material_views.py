@@ -1,8 +1,8 @@
+# from _typeshed import NoneType
 import os
 import shutil
 import uuid
 from datetime import date, datetime, timedelta
-
 
 
 from rest_framework import status
@@ -15,7 +15,7 @@ from apiv1.decorator import role_permission
 from config.settings import MEDIA_ROOT, tsugitasu_db, env
 from constants import ROLE_NONE, ROLE_ALL, ROLE_TEACHER, ROLE_STUDENT
 from apiv1.material_func import FileManager
-from pymongo import ASCENDING
+from pymongo import ASCENDING, DESCENDING
 from bson.objectid import ObjectId
 
 import numpy as np
@@ -24,6 +24,8 @@ co_material = tsugitasu_db['material']
 co_user = tsugitasu_db['users_user']
 
 # 教材登録
+
+
 class MaterialCreateAPIView(APIView):
     authentication_classes = [FirebaseAuthentication, ]
 
@@ -33,8 +35,8 @@ class MaterialCreateAPIView(APIView):
         input_dic = {}
 
         # 本当はここで検証
-        cid = input_dic['cid'] = str(uuid.uuid4()) # 派生版・更新版でも共通となるIDを振る
-        bid = input_dic['bid'] = 1 # ブランチを特定するID
+        cid = input_dic['cid'] = str(uuid.uuid4())  # 派生版・更新版でも共通となるIDを振る
+        bid = input_dic['bid'] = 1  # ブランチを特定するID
         vid = input_dic['ver'] = 1
 
         input_dic['title'] = request.data['title']
@@ -56,7 +58,6 @@ class MaterialCreateAPIView(APIView):
         file = request.FILES['fd']
         image_main = request.FILES['image_main']
         image_subs = request.FILES.getlist('image_sub[]')
-        
 
         # file_managerの作成
         f_manager = FileManager(file, image_main, image_subs, cid, bid, vid)
@@ -132,7 +133,8 @@ class HistoryTreeGetAPIView(APIView):
                 filter={'uid': user_ref},
                 projection={'displayname': 1, 'photo_url': 1}
             )
-            #print(user)
+            # print(user)
+
             def join_user(x):
                 x['author'] = user['displayname']
                 x['photo_url'] = user['photo_url']
@@ -145,7 +147,6 @@ class HistoryTreeGetAPIView(APIView):
                 x['_id'] = str(x['_id'])
                 #if x['is_latest']:
                 #    x['right'] = False
-
                 return x
                 
             def format_date(x):
@@ -214,23 +215,24 @@ class HistoryTreeGetAPIView(APIView):
             "contents": contents,
         })
 
-
 # 詳細表示用の教材データを取得 (機能番号21)
 class GetMaterialAPIView(APIView):
     authentication_classes = []
     keys = ["mes", "uid", "displayname", "photo_url", "title", 
         "context", "file_name", "content_image_main", "content_image_subs", "created_at", "tags", "comments", "good",]
 
-    @role_permission(ROLE_NONE)
     def get(self, request, cid, bid, ver):
         def to_dict(x):
             return {key: x[key] for key in self.keys}
 
         cursor = co_material.find(
             filter={'cid': cid, 'bid': bid, 'ver': ver},
-            projection={"user_ref": 1 ,"mes": 1, "title": 1, "context": 1, "file_name": 1, "content_image_main": 1, "content_image_subs": 1, "created_at": 1, "tags": 1, "comments": 1, "good": 1}
+            projection={"user_ref": 1, "mes": 1, "title": 1, "context": 1, "file_name": 1, "content_image_main": 1,
+                        "content_image_subs": 1, "created_at": 1, "tags": 1, "comments": 1, "good": 1}
         )
 
+        if cursor.count() == 0:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
         # ユーザー情報を取得
         user_ref = cursor[0]['user_ref']
@@ -249,3 +251,65 @@ class GetMaterialAPIView(APIView):
         dic_list = list(map(to_dict, dic_list))
 
         return Response(dic_list[0])
+
+
+# 最近投稿した教材の取得 (機能番号42)
+class GetLatestMaterialsAPIView(APIView):
+    authentication_classes = [FirebaseAuthentication, ]
+    keys = ["cid", "bid", "context", "ver", "title", "content_image_main",
+            "tags", "created_at", "display_name", "photo_url"]
+
+    def get(self, request):
+        user = request.user
+        if user.uid is None:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        def to_dict(x):
+            return {key: x[key] for key in self.keys}
+
+        cursor = co_material.find(
+            filter={'user_ref': user.uid, 'is_latest': True},
+            projection={"title": 1, "context": 1, "content_image_main": 1,
+                        "created_at": 1, "tags": 1, "cid": 1, "bid": 1, "ver": 1},
+            limit=6,
+            sort=[('created_at', DESCENDING)]
+        )
+
+        user_cursor = co_user.find_one(
+            filter={'uid': user.uid},
+            projection={'displayname': 1, 'photo_url': 1},
+        )
+
+        def join_user(x):
+            x['display_name'] = user_cursor['displayname']
+            x['photo_url'] = user_cursor['photo_url']
+            return x
+
+        dic_list = list(map(join_user, cursor))
+        dic_list = list(map(to_dict, dic_list))
+
+        return Response(dic_list)
+
+
+# いいね数のカウント(機能番号26)
+class AddGoodAPIView(APIView):
+    authentication_classes = [FirebaseAuthentication,]
+    # keys = ["cid", "bid", "context", "ver", "title", "content_image_main", "tags", "created_at", "display_name", "photo_url"]
+
+    def get(self, request, cid, bid, ver):
+        user = request.user
+        # uid非保持の場合はいいねを押せないようにする
+        if user.uid is None:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        # 教材の情報を取得
+        cursor = co_material.find(filter={'cid': cid, 'bid': bid, 'ver': ver, 'good_contents': {'$in': [user.uid]}})
+
+        if cursor.count() == 0:
+            result = co_material.update_one({'cid': cid, 'bid': bid, 'ver': ver}, {'$inc': {'good': 1}, '$push': {'good_contents': user.uid}})
+        elif cursor.count() == 1:
+            result = co_material.update_one({'cid': cid, 'bid': bid, 'ver': ver}, {'$inc': {'good': -1}, '$pull': {'good_contents': user.uid}})
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(status=status.HTTP_200_OK)

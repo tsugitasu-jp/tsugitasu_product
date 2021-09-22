@@ -20,16 +20,13 @@ from django.views.generic import TemplateView
 
 from apiv1 import urls
 
+
 class IndexTemplateView(TemplateView):
     template_name = "prac.html"
+
 
 urlpatterns = [
     #path('admin/', admin.site.urls),
     path('api-v1/', include(urls)),
     path('', IndexTemplateView.as_view()),
 ]
-
-
-
-
-
