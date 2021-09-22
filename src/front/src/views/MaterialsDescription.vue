@@ -165,14 +165,14 @@
                   スライド
                 </div>
               </div>
-              <div class="branch_material_mes">
+              <div class="branch_material_mes" @click="touchToMaterial(materials.cid, materials.bid, materials.vid)">
                 <div v-if="materials.mes != ''" class="left_top" />
                 <div v-if="materials.mes != ''" class="right_top" />
                 <div v-if="materials.mes != ''" class="right_bottom" />
                 <div v-if="materials.mes != ''" class="left_bottom" />
                 <p v-if="materials.mes != ''" >{{materials.mes}}</p>
                 <div v-if="materials.mes != ''" class="branch_material_author">
-                  <div class="author_image">
+                  <div class="author_image" :style="{ backgroundImage: 'url(http://127.0.0.1/media/' + materials.photo_url + ')' }">
                   </div>
                   <div class="author_date_container">
                     <div class="author">
@@ -237,6 +237,13 @@ export default {
   },
   computed: {
   },
+  watch: {
+    '$route': function (to, from) {
+      if (to.path !== from.path) {
+        this.init();
+      }
+    }
+  },
   methods: {
     init() {
       // 教材の取得
@@ -284,6 +291,12 @@ export default {
             this.disp_branch.push(response.data['contents'][i])
           }
         });
+    },
+    touchToMaterial(cid, bid, vid){
+      console.log(cid)
+      console.log(bid)
+      console.log(vid)
+      this.$router.push({ name: 'MaterialsDescription', params: {cid: cid, bid: bid, vid: vid}})
     },
     requestToS3(path, num, e_num){
       return new Promise((resolve, reject) => {
@@ -337,6 +350,8 @@ export default {
 <style lang="scss" scoped>
 .materials_description_container{
   background-color: #FFFFFF;
+  background-size:contain;
+  background-repeat: no-repeat;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -559,7 +574,9 @@ export default {
           align-items: center;
           justify-content: flex-start;
           .author_image{
-            background-color: crimson;
+            //background-color: crimson;
+            background-size:contain;
+            background-repeat: no-repeat;
             width: 40px;
             height: 40px;
             border-radius: 50%;
@@ -800,6 +817,7 @@ export default {
             }
             .branch_material_mes{
               position: relative;
+              cursor: pointer;
               width: 250px;
               height: 50px;
               display: flex;
@@ -867,6 +885,8 @@ export default {
                 align-items: center;
                 justify-content: center;
                 .author_image{
+                  background-size:contain;
+                  background-repeat: no-repeat;
                   width: 40px;
                   height: 40px;
                   border-radius: 99px;

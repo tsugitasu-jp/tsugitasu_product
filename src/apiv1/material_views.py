@@ -1,7 +1,7 @@
 import os
 import shutil
 import uuid
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 
 
@@ -95,7 +95,7 @@ class MaterialCreateAPIView(APIView):
 # 教材の木(history-tree)を取得 (機能番号22)
 class HistoryTreeGetAPIView(APIView):
     authentication_classes = []
-    keys = ["_id", "bid", "mes", "ver", "created_at", "author", "parent",
+    keys = ["_id", "cid", "bid", "vid", "mes", "ver", "created_at", "author", "parent",
         "photo_url", "depth", "is_latest", "derived", "left", "right", "top", "bottom"]
     
     @role_permission(ROLE_NONE)
@@ -111,7 +111,7 @@ class HistoryTreeGetAPIView(APIView):
                 )['ver']
             # 派生元のver値+ノードのver値
             x['depth'] = x['ver'] + d_ver
-
+            x['vid'] = x['ver']
             return {key: x[key] for key in self.keys}
 
         # bidの値毎に値を取得
@@ -120,7 +120,7 @@ class HistoryTreeGetAPIView(APIView):
         while True:
             cursor = co_material.find(
                 filter={'bid': bid}, 
-                projection={'user_ref': 1, 'bid': 1, 'ver': 1, 'derived':1 , 'mes': 1, 'created_at': 1, 'is_latest': 1, 'parent': 1}, # cidは詳細ページで得られるので要らない
+                projection={'user_ref': 1, 'cid': 1, 'bid': 1, 'ver': 1, 'derived':1 , 'mes': 1, 'created_at': 1, 'is_latest': 1, 'parent': 1}, # cidは詳細ページで得られるので要らない
                 sort=[('created_at', ASCENDING)]
             )
             if cursor.count() == 0:
@@ -148,9 +148,27 @@ class HistoryTreeGetAPIView(APIView):
 
                 return x
                 
+            def format_date(x):
+                td = datetime.now() - x['created_at']
+                day = td.days
+                if day < 0:
+                    x['created_at'] = "error"
+                elif day == 0:
+                    x['created_at'] = "今日"
+                elif day == 1:
+                    x['created_at'] = "昨日"
+                elif day <= 30:
+                    x['created_at'] = f"{day}日前"
+                elif day <= 359:
+                    x['created_at'] = f"{day % 30}ヵ月前"
+                else:
+                    x['created_at'] = x['created_at'].date()
+                return x
+
             dic_lst = list(map(join_user, cursor))
             dic_lst = list(map(consider_node, dic_lst))
             dic_lst = list(map(to_depth, dic_lst))
+            dic_lst = list(map(format_date, dic_lst))
             
             contents.append(dic_lst)
             bid += 1
@@ -200,7 +218,8 @@ class HistoryTreeGetAPIView(APIView):
 # 詳細表示用の教材データを取得 (機能番号21)
 class GetMaterialAPIView(APIView):
     authentication_classes = []
-    keys = ["mes", "uid", "displayname", "photo_url", "title", "context", "file_name", "content_image_main", "content_image_subs", "created_at", "tags", "comments", "good",]
+    keys = ["mes", "uid", "displayname", "photo_url", "title", 
+        "context", "file_name", "content_image_main", "content_image_subs", "created_at", "tags", "comments", "good",]
 
     @role_permission(ROLE_NONE)
     def get(self, request, cid, bid, ver):

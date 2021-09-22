@@ -130,6 +130,15 @@ export default {
     };
   },
   created() {
+    this.axios
+      .get('http://127.0.0.1:8000/api-v1/follow/num/'+this.$route.params.uid + "/")
+      .then((response) => {
+        this.$set(this.user, 'follow_num', response.data.follow)
+        this.$set(this.user, 'follower_num', response.data.follower)
+      })
+      .catch(function(error) {
+          console.log(error)
+      })
   },
   computed: {
   },
