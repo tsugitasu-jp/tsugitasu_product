@@ -6,23 +6,23 @@
     </div>
     <div class="materials_label_container">
       <div class="label">
-        作成した教材
+        最近作成した教材
       </div>
       <div class="materials_container">
-        <div class="material_container" v-for="my_material in disp_list.my_materials" :key="my_material.id">
-          <img class="material_image" :src="my_material.image">
+        <div class="material_container" v-for="my_material in disp_list.my_materials" :key="my_material.id" @click="touchToMaterial(my_material.cid, my_material.bid, my_material.ver)">
+          <img class="material_image" :style="{ backgroundImage: 'url(http://127.0.0.1/media/' + my_material.cid + '/b' + my_material.bid + '/v' + my_material.ver + '/' + my_material.content_image_main + ')' }">
           <div class="material_title">
-            {{my_material.title}}
+            {{my_material.title.slice(0, 15)}}...
           </div>
           <div class="material_description">
-            {{my_material.description}}
+            <p v-html="my_material.context.slice(0, 60) + '...' " style="display: block"></p>
           </div>
           <div class="author_container">
             <div class="author_name">
-              {{my_material.author}}
+              {{my_material.display_name}}
             </div>
             <div class="author_date">
-              {{my_material.auth_date}}
+              {{my_material.created_at}}
             </div>
           </div>
         </div>
@@ -58,6 +58,8 @@
 
 <script>
 import FooterMenu from "../components/FooterMenu.vue";
+var firebase = require('firebase/app')
+require('firebase/auth')
 
 export default {
   components: { 
@@ -66,43 +68,7 @@ export default {
   data() {
     return {
       disp_list:{
-        my_materials:[
-          {
-            title:"教材タイトル",
-            description:"EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー",
-            author:"Tatsuya Okazaki",
-            auth_date:"2020.01/01",
-            image:"https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60"
-          },
-          {
-            title:"教材タイトル",
-            description:"EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー",
-            author:"Tatsuya Okazaki",
-            auth_date:"2020.01/01",
-            image:"https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60"
-          },
-          {
-            title:"教材タイトル",
-            description:"EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー",
-            author:"Tatsuya Okazaki",
-            auth_date:"2020.01/01",
-            image:"https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60"
-          },
-          {
-            title:"教材タイトル",
-            description:"EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー",
-            author:"Tatsuya Okazaki",
-            auth_date:"2020.01/01",
-            image:"https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60"
-          },
-          {
-            title:"教材タイトル",
-            description:"EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー",
-            author:"Tatsuya Okazaki",
-            auth_date:"2020.01/01",
-            image:"https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60"
-          },
-        ],
+        my_materials:[],
         favorite_materials:[
           {
             title:"教材タイトル",
@@ -130,20 +96,35 @@ export default {
     };
   },
   created() {
-    this.axios
-      .get('http://127.0.0.1:8000/api-v1/follow/num/'+this.$route.params.uid + "/")
-      .then((response) => {
-        this.$set(this.user, 'follow_num', response.data.follow)
-        this.$set(this.user, 'follower_num', response.data.follower)
-      })
-      .catch(function(error) {
-          console.log(error)
-      })
+    firebase.default.auth().onAuthStateChanged((user) => {
+      user.getIdToken().then((token) => {
+        const config = {
+          headers: {
+            'Authorization': "JWT " + token,
+          },
+        };
+        this.axios
+          .get('http://127.0.0.1:8000/api-v1/contents/me/', config)
+          .then((response) => {
+            console.log(response.data)
+            this.$set(this.disp_list, 'my_materials', response.data)
+          })
+          .catch(function(error) {
+              console.log(error)
+          })
+      });
+      
+    })
   },
   computed: {
   },
   methods: {
-    
+    touchToMaterial(cid, bid, vid){
+      console.log(cid)
+      console.log(bid)
+      console.log(vid)
+      this.$router.push({ name: 'MaterialsDescription', params: {cid: cid, bid: bid, vid: vid}})
+    },
   },
 };
 </script>

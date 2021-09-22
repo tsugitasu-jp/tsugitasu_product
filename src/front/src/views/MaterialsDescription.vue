@@ -50,10 +50,10 @@
       <div class="base_btn_style dl_btn" @click="getFiles">
         この教材をダウンロード
       </div>
-      {{progress.rate}}
       <div class="base_btn_style comment_btn">
         作者にコメントを送る
       </div>
+     
     </div>
     <div class="comments_content_container">
       <div class="comment_label_container">
@@ -233,6 +233,7 @@ export default {
     };
   },
   created() {
+    this.scrollTop()
     this.init()
   },
   computed: {
@@ -297,6 +298,12 @@ export default {
       console.log(bid)
       console.log(vid)
       this.$router.push({ name: 'MaterialsDescription', params: {cid: cid, bid: bid, vid: vid}})
+      this.scrollTop()
+    },
+    scrollTop: function(){
+      window.scrollTo({
+        top: 0
+      });
     },
     requestToS3(path, num, e_num){
       return new Promise((resolve, reject) => {

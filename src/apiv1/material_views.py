@@ -284,9 +284,27 @@ class GetLatestMaterialsAPIView(APIView):
             x['display_name'] = user_cursor['displayname']
             x['photo_url'] = user_cursor['photo_url']
             return x
+        
+        def format_date(x):
+            td = datetime.now() - x['created_at']
+            day = td.days
+            if day < 0:
+                x['created_at'] = "error"
+            elif day == 0:
+                x['created_at'] = "今日"
+            elif day == 1:
+                x['created_at'] = "昨日"
+            elif day <= 30:
+                x['created_at'] = f"{day}日前"
+            elif day <= 359:
+                x['created_at'] = f"{day % 30}ヵ月前"
+            else:
+                x['created_at'] = x['created_at'].date()
+            return x
 
         dic_list = list(map(join_user, cursor))
         dic_list = list(map(to_dict, dic_list))
+        dic_list = list(map(format_date, dic_list))
 
         return Response(dic_list)
 

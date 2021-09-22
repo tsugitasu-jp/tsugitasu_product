@@ -14,20 +14,20 @@
         最近投稿・アップロードした教材
       </div>
       <div class="materials_container">
-        <div class="material_container" v-for="created_material in disp_list.created_materials" :key="created_material.id">
-          <img class="material_image" :src="created_material.image">
+        <div class="material_container" v-for="created_material in disp_list.created_materials" :key="created_material.id" @click="touchToMaterial(created_material.cid, created_material.bid, created_material.ver)">
+          <img class="material_image" :style="{ backgroundImage: 'url(http://127.0.0.1/media/' + created_material.cid + '/b' + created_material.bid + '/v' + created_material.ver + '/' + created_material.content_image_main + ')' }">
           <div class="material_title">
-            {{created_material.title}}
+            {{created_material.title.slice(0, 15)}}...
           </div>
           <div class="material_description">
-            {{created_material.description}}
+            <p v-html="created_material.context.slice(0, 60) + '...' " style="display: block"></p>
           </div>
           <div class="author_container">
             <div class="author_name">
-              {{created_material.author}}
+              {{created_material.display_name}}
             </div>
             <div class="author_date">
-              {{created_material.auth_date}}
+              {{created_material.created_at}}
             </div>
           </div>
         </div>
@@ -119,6 +119,8 @@
 
 <script>
 import FooterMenu from "../components/FooterMenu.vue";
+var firebase = require('firebase/app')
+require('firebase/auth')
 
 export default {
   components: { 
@@ -129,55 +131,42 @@ export default {
       Modal_Tag:false,
       Modal_Disp:false,
       disp_list:{
-        created_materials:[
-          {
-            title:"教材タイトル",
-            description:"EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー",
-            author:"Tatsuya Okazaki",
-            auth_date:"2020.01/01",
-            image:"https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60"
-          },
-          {
-            title:"教材タイトル",
-            description:"EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー",
-            author:"Tatsuya Okazaki",
-            auth_date:"2020.01/01",
-            image:"https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60"
-          },
-          {
-            title:"教材タイトル",
-            description:"EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー",
-            author:"Tatsuya Okazaki",
-            auth_date:"2020.01/01",
-            image:"https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60"
-          },
-          {
-            title:"教材タイトル",
-            description:"EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー",
-            author:"Tatsuya Okazaki",
-            auth_date:"2020.01/01",
-            image:"https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60"
-          },
-          {
-            title:"教材タイトル",
-            description:"EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー",
-            author:"Tatsuya Okazaki",
-            auth_date:"2020.01/01",
-            image:"https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60"
-          },
-        ],
+        created_materials:[],
       }
     };
   },
   created() {
+    firebase.default.auth().onAuthStateChanged((user) => {
+      user.getIdToken().then((token) => {
+        const config = {
+          headers: {
+            'Authorization': "JWT " + token,
+          },
+        };
+        this.axios
+          .get('http://127.0.0.1:8000/api-v1/contents/me/', config)
+          .then((response) => {
+            console.log(response.data)
+            this.$set(this.disp_list, 'created_materials', response.data)
+          })
+          .catch(function(error) {
+              console.log(error)
+          })
+      });
+    })
   },
   computed: {
   },
   methods: {
     modal_disp_change () {
-      console.log("a")
       this.Modal_Disp = !this.Modal_Disp
-    }
+    },
+    touchToMaterial(cid, bid, vid){
+      console.log(cid)
+      console.log(bid)
+      console.log(vid)
+      this.$router.push({ name: 'MaterialsDescription', params: {cid: cid, bid: bid, vid: vid}})
+    },
   },
 };
 </script>
