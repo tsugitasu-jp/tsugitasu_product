@@ -40,7 +40,6 @@ hoge.vue
         let files = e.target.files;
         this.uploadFile = files[0];
       },
-
       selectedMainImage(e) {
         // 選択された File の情報を保存しておく
         e.preventDefault();

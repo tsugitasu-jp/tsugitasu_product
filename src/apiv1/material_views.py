@@ -28,8 +28,7 @@ co_user = tsugitasu_db['users_user']
 
 class MaterialCreateAPIView(APIView):
     authentication_classes = [FirebaseAuthentication, ]
-
-    @role_permission(ROLE_TEACHER)
+    
     def post(self, request):
         user = request.user
         input_dic = {}

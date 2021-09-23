@@ -3,13 +3,15 @@
     <div class="mypage_header">
       <h1>教材の投稿・アップロード</h1>
       <p>作成した教材を投稿・アップロードして、ツギタスをもっと楽しみましょう！</p>
+      <p>↓まずは教材イメージをアップロード</p>
     </div>
     <div class="upload_btn_container">
-      <div class="upload_btn" @click="modal_disp_change">
+      <div class="upload_btn">
         FILE UPLOAD
+        <input class="upload_btn_input" type="file" multiple @change="file_upload" accept="image/*">
       </div>
     </div>
-    <div class="materials_label_container">
+     <div class="materials_label_container">
       <div class="label">
         最近投稿・アップロードした教材
       </div>
@@ -32,9 +34,9 @@
           </div>
         </div>
       </div>
-    </div>    
+    </div>
     <FooterMenu />
-    <div class="modal_container" v-if="Modal_Disp" @click.self="modal_disp_change">
+    <div class="modal_container" v-if="UploadModal.isShown" @click.self="modal_disp_change">
       <div class="upload_form_container">
         <div class="modal_close_btn">
           <img src="../assets/icons/cross_gray.png" class="gray_cross">
@@ -43,78 +45,79 @@
         <div class="modal_label">
           トップ＆その他イメージ
         </div>
-        <div class="material_image_container" >
-          <div class="material_image_top">
-            
-          </div>
+        <div class="material_image_container">
+          <img :src="UploadModal.Disp_File_Image_top" class="material_image_top">
           <div class="other_material_image_container">
-            <div class="material_image" @click="add_file"/>
-            <div class="material_image"/>
-            <div class="material_image"/>
+            <img v-for="filepath in UploadModal.Disp_File_Image " :key="filepath.id" :src="filepath" class="material_image"/>
           </div>
         </div>
         <div class="modal_label">
-          タイトル（20字以内）
+          教材ファイルをアップロード
         </div>
-        <input class="input" type="text" placeholder="タイトルを入力">
+        <div class="modal_o">
+          <input @change="selectedFile" type="file" name="file">
+        </div>
+        <div class="modal_label">
+          タイトル（15字以内）
+        </div>
+        <input class="input" type="text" placeholder="タイトルを入力" :v-model="UploadModal.Title">
         <div class="modal_label">
           教科
         </div>
         <div class="subject_tag_container">
-          <div class="subject_tag">
+          <div :class="(UploadModal.Subject == 'japanese') ? 'subject_tag_checked' : 'subject_tag'" @click="subjects_apply('japanese')">
             国語
           </div>
-          <div class="subject_tag">
+          <div :class="(UploadModal.Subject == 'math') ? 'subject_tag_checked' : 'subject_tag'" @click="subjects_apply('math')">
             算数
           </div>
-          <div class="subject_tag">
+          <div :class="(UploadModal.Subject == 'english') ? 'subject_tag_checked' : 'subject_tag'" @click="subjects_apply('english')">
             英語
           </div>
-          <div class="subject_tag">
+          <div :class="(UploadModal.Subject == 'science') ? 'subject_tag_checked' : 'subject_tag'" @click="subjects_apply('science')">
             理科
           </div>
-          <div class="subject_tag">
+          <div :class="(UploadModal.Subject == 'social_studies') ? 'subject_tag_checked' : 'subject_tag'" @click="subjects_apply('social_studies')">
             社会
           </div>
-          <div class="subject_tag">
+          <div :class="(UploadModal.Subject == 'art') ? 'subject_tag_checked' : 'subject_tag'" @click="subjects_apply('art')">
             美術
           </div>
-          <div class="subject_tag">
+          <div :class="(UploadModal.Subject == 'pt') ? 'subject_tag_checked' : 'subject_tag'" @click="subjects_apply('pt')">
             体育
           </div>
-          <div class="subject_tag">
-            体育
-          </div>
-          <div class="subject_tag">
+          <div :class="(UploadModal.Subject == 'dt') ? 'subject_tag_checked' : 'subject_tag'" @click="subjects_apply('dt')">
             技術
           </div>
-          <div class="subject_tag">
+          <div :class="(UploadModal.Subject == 'home_economics') ? 'subject_tag_checked' : 'subject_tag'" @click="subjects_apply('home_economics')">
             家庭
           </div>
-          <div class="subject_tag">
+          <div :class="(UploadModal.Subject == 'programing') ? 'subject_tag_checked' : 'subject_tag'" @click="subjects_apply('programing')">
             プログラミング
           </div>
-          <div class="subject_tag">
+          <div :class="(UploadModal.Subject == 'other') ? 'subject_tag_checked' : 'subject_tag'" @click="subjects_apply('other')">
             その他
           </div>
         </div>
         <div class="modal_label">
           教材の説明（200字以内）
         </div>
-        <textarea class="textarea" cols="70" rows="3" placeholder="説明文を入力"></textarea>
+        <textarea class="textarea" cols="70" rows="3" placeholder="説明文を入力" v-model="UploadModal.Description"></textarea>
         <div class="modal_label">
           タグ付け
           <div class="input_container_radio">
-            <input class="input_radio" type="checkbox" id="tag_on" v-model="Modal_Tag">
+            <input class="input_radio" type="checkbox" id="tag_on" v-model="UploadModal.AutoGenTag">
             <label class="label_radio" for="tag_on">自動タグ生成機能を利用する</label>
           </div>
         </div>
-        <textarea class="textarea" cols="70" rows="3" placeholder="#キーワードでタグを追加"></textarea>
-        <div class="modal_form_submit_btn">
+        <textarea class="textarea" cols="70" rows="3" placeholder="#キーワードでタグを追加"  v-model="UploadModal.Tags"></textarea>
+        
+        <div class="modal_form_submit_btn" @click="material_upload">
           教材をアップロードする
         </div>
       </div>
     </div>
+    
   </div>
 </template>
 
@@ -129,8 +132,25 @@ export default {
   },
   data() {
     return {
-      Modal_Tag:false,
-      Modal_Disp:false,
+      UploadModal :{
+        isShown:false,
+        Disp_File_Image:[],
+        Disp_File_Image_top:"",
+
+        // ****ここからアップロードするデータ****
+        // ファイルの情報が配列で入っている
+        File_Info:[],
+        // 教材のタイトル
+        Title:"",
+        // 教材の教科
+        Subject: "",
+        // 教材の説明
+        Description: "",
+        // 自動タグ付け機能のオン・オフ
+        AutoGenTag:false,
+        // タグ
+        Tags:""
+      },
       disp_list:{
         created_materials:[],
       }
@@ -159,11 +179,38 @@ export default {
   computed: {
   },
   methods: {
-    add_file(){
-
+    selectedFile(e) {
+      // 選択された File の情報を保存しておく
+      e.preventDefault();
+      let files = e.target.files;
+      this.UploadModal.material = files[0];
     },
     modal_disp_change () {
-      this.Modal_Disp = !this.Modal_Disp
+      console.log("modal change")
+      this.UploadModal.isShown = !this.UploadModal.isShown;
+    },
+    file_upload (file) {
+      // ファイル情報の初期化
+      this.UploadModal.Disp_File_Image=[]
+      this.UploadModal.Disp_File_Image_top=""
+      this.UploadModal.File_Info=[]
+      this.UploadModal.Title=""
+      this.UploadModal.Subject=""
+      this.UploadModal.Description=""
+      this.UploadModal.AutoGenTag=false
+      this.UploadModal.Tags=""
+      
+      if(file.target.files.length != 0){
+        this.UploadModal.File_Info = file.target.files;
+
+        // プレビュー用のURLを発行処理
+        this.UploadModal.File_Info.forEach(file => {
+          this.UploadModal.Disp_File_Image.push(URL.createObjectURL(file));
+        });
+        this.UploadModal.Disp_File_Image_top = this.UploadModal.Disp_File_Image.shift();
+
+        this.modal_disp_change();
+      }
     },
     touchToMaterial(cid, bid, vid){
       console.log(cid)
@@ -171,6 +218,76 @@ export default {
       console.log(vid)
       this.$router.push({ name: 'MaterialsDescription', params: {cid: cid, bid: bid, vid: vid}})
     },
+    subjects_apply (subject) {
+      this.UploadModal.Subject = subject;
+    },
+    array_to_formdata(data, formData){
+      Object.keys(data).forEach(key => {
+        const value = data[key];
+        if (Array.isArray(value)) {
+          value.forEach(entry => {
+            formData.append(key + '[]', entry);
+          });
+        } else {
+          formData.append(key, value);
+        }
+      });
+    },
+    // 教材をアップロードする処理
+    material_upload (){
+      let file_lst = this.UploadModal.File_Info
+      console.log(this.UploadModal.Tags)
+      let tags = []
+      let tag_o = this.UploadModal.Tags.split(/\r|\s|#/)
+      for (let i = 0; i< tag_o.length;i++){
+        if (tag_o[i] == ''){
+          continue
+        }
+        tags.push(tag_o[i])
+      }
+      
+      console.log(tags)
+      let files = []
+      for (let i = 0; i< file_lst.length;i++){
+        if (i==0) {
+          continue;
+        }
+        files.push(file_lst[i])
+      }
+      
+      // FormData を利用して File等 を POST する
+      let formData = new FormData();
+      formData.append('fd', this.UploadModal.material);
+      formData.append('image_main', file_lst[0]);
+      formData.append('title', this.UploadModal.Title);
+      formData.append('subject', this.UploadModal.Subject)
+      formData.append('context', this.UploadModal.Description)
+      formData.append('tag_flag', this.UploadModal.AutoGenTag)
+      this.array_to_formdata({'image_sub': files}, formData)
+      this.array_to_formdata({'tag': tags}, formData)
+
+      firebase.default.auth().onAuthStateChanged((user) => {
+        user.getIdToken().then((token) => {
+          const config = {
+            headers: {
+              'Authorization': "JWT " + token,
+              'content-type': 'multipart/form-data'
+            }
+          };
+          this.axios
+            .post('http://127.0.0.1:8000/api-v1/content/create/', formData, config)
+            .then(function(response) {
+                console.log(response.data)
+            })
+            .catch(function(error) {
+                console.log(error)
+            })
+        })
+      }),
+
+      // Modalを閉じる処理
+      this.modal_disp_change();
+    }
   },
 };
 </script>
@@ -191,8 +308,8 @@ export default {
     flex-direction: column;
     align-items: flex-start;
     justify-content: center;
+    position: relative;
     .upload_btn{
-      cursor: pointer;
       background-color: #F14479;
       width: 500px;
       height: 100px;
@@ -204,8 +321,18 @@ export default {
       font-size: 40px;
       font-weight: 900;
       color: #FFFFFF;
-      &:hover{
+      pointer-events: none;
+      &:hover {
         background-color: #cb2257;
+      }
+      .upload_btn_input{
+        cursor: pointer;
+        opacity: 0;
+        width: 500px;
+        height: 100px;
+        border-radius: 15px;
+        position: absolute;
+        pointer-events: auto;
       }
     }
   }
@@ -360,7 +487,6 @@ export default {
         align-items: center;
         justify-content: flex-start;
         .material_image_top{
-          background-color: deeppink;
           width: 250px;
           height: 150px;
           margin-right: 10px;
@@ -377,7 +503,6 @@ export default {
           flex-wrap: wrap;
           .material_image{
             flex-shrink: 0;
-            background-color: deepskyblue;
             width: 150px;
             height: 90px;
             margin: 10px;
@@ -415,12 +540,55 @@ export default {
         justify-content: flex-start;
         flex-wrap: wrap;
         .subject_tag{
+          cursor: pointer;
+          background-color: #FFFFFF;
           font-size: 15px;
           color: #757474;
           padding: 5px 15px;
           margin: 5px 10px;
           border: 1px solid #757474;
           border-radius: 5px;
+          &:hover {
+            background-color: #EEEEEE;
+          }
+        }
+        .subject_tag_checked{
+          cursor: pointer;
+          background-color: #757474;
+          font-size: 15px;
+          color: #FFFFFF;
+          padding: 5px 15px;
+          margin: 5px 10px;
+          border: 1px solid #757474;
+          border-radius: 5px;
+        }
+      }
+      .modal_o{
+        flex-shrink: 0;
+        width: 65%;
+        font-size: 17px;
+        font-weight: 400;
+        color: #757474;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        .input_container_radio{
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          justify-content: flex-start;
+          .input_radio{
+            cursor: pointer;
+            margin: 0 10px;
+            outline: none;
+            width: 15px;
+            height: 15px;
+          }
+          .label_radio{
+            cursor: pointer;
+            font-size: 14px;
+          }
         }
       }
       .modal_label{
@@ -455,6 +623,7 @@ export default {
     }
     .modal_form_submit_btn{
       cursor: pointer;
+      background-color: #FFFFFF;
       padding: 5px 20px;
       margin-top: 35px;
       border: 2px solid #707070;
@@ -466,6 +635,12 @@ export default {
       flex-direction: row;
       align-items: center;
       justify-content: center;
+      transition: 0.2s ;
+      &:hover {
+        color: #FFFFFF;
+        background-color: #757474;
+
+      }
     }
   }
 }
