@@ -1,6 +1,6 @@
 from django.urls import path
 
-from apiv1.material_views import MaterialCreateAPIView, HistoryTreeGetAPIView, GetMaterialAPIView, GetLatestMaterialsAPIView, AddGoodAPIView, GetMaterialsAPIView
+from apiv1.material_views import MaterialCreateAPIView, HistoryTreeGetAPIView, GetMaterialAPIView, GetLatestMaterialsAPIView, AddGoodAPIView, GetMaterialsAPIView, GetGoodMaterialsAPIView
 from apiv1.user_views import SignUpAPIView, SetUserDataAPIView, FollowCreateAPIView, FollowDeleteAPIView, FollowGetNumberAPIView, FollowListGetAPIView, FollowerListGetAPIView
 
 urlpatterns = [
@@ -16,5 +16,6 @@ urlpatterns = [
     path('content/<str:cid>/b<int:bid>/v<int:ver>/',GetMaterialAPIView.as_view()),
     path('contents/me/', GetLatestMaterialsAPIView.as_view()),
     path('content/<str:cid>/b<int:bid>/v<int:ver>/add_good/',AddGoodAPIView.as_view()),
-    path('materials/',GetMaterialsAPIView.as_view()),
+    path('materials/', GetMaterialsAPIView.as_view()),
+    path('goodmaterials/', GetGoodMaterialsAPIView.as_view()),
 ]

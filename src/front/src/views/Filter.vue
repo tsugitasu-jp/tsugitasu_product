@@ -541,27 +541,62 @@ export default {
       },
     };
   },
+  watch: {
+    '$route': function (to, from) {
+      if (to.query.tag !== from.query.tag) {
+        this.init()
+      }
+    }
+  },
   created() {
-    this.axios
-      .get('/api-v1/materials/?op='+'evaluation')
-      .then((response) => {
-        this.$set(this.disp_list, 'eval_materials', response.data)
-      })
-      .catch(function(error) {
-          console.log(error)
-      })
-    this.axios
-      .get('/api-v1/materials/?op='+'create')
-      .then((response) => {
-        this.$set(this.disp_list, 'create_materials', response.data)
-      })
-      .catch(function(error) {
-          console.log(error)
-      })
+    this.init();
   },
   computed: {
   },
   methods: {
+    init(){
+      let tags = this.$route.query.tag
+      if (tags){
+        let txt = ''
+        for (let i = 0; i< tags.length;i++){
+          txt += '&'
+          txt += ("tag=" + tags[i])
+        }  
+        this.axios
+          .get('/api-v1/materials/?op='+'evaluation'+txt)
+          .then((response) => {
+            this.$set(this.disp_list, 'eval_materials', response.data)
+          })
+          .catch(function(error) {
+              console.log(error)
+          })
+        this.axios
+          .get('/api-v1/materials/?op='+'create'+txt)
+          .then((response) => {
+            this.$set(this.disp_list, 'create_materials', response.data)
+          })
+          .catch(function(error) {
+              console.log(error)
+          })
+      }else{
+        this.axios
+          .get('/api-v1/materials/?op='+'evaluation')
+          .then((response) => {
+            this.$set(this.disp_list, 'eval_materials', response.data)
+          })
+          .catch(function(error) {
+              console.log(error)
+          })
+        this.axios
+          .get('/api-v1/materials/?op='+'create')
+          .then((response) => {
+            this.$set(this.disp_list, 'create_materials', response.data)
+          })
+          .catch(function(error) {
+              console.log(error)
+          })
+      }
+    },
     touchToMaterial(cid, bid, vid){
       console.log(cid)
       console.log(bid)

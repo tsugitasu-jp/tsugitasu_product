@@ -20,7 +20,6 @@ from django.views.generic import TemplateView
 
 from apiv1 import urls
 
-
 class IndexTemplateView(TemplateView):
     template_name = "prac.html"
 

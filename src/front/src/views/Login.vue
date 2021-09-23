@@ -65,6 +65,8 @@ export default {
       this.password.isDisp = !this.password.isDisp;
     },
     login(){
+      console.log(this.mail)
+      console.log(this.pass)
       firebase.default.auth().signInWithEmailAndPassword(this.mail, this.pass)
       .then(
         user => {

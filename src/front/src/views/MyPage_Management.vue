@@ -33,20 +33,20 @@
         お気に入りの教材
       </div>
       <div class="materials_container">
-        <div class="material_container" v-for="favorite_material in disp_list.favorite_materials" :key="favorite_material.id">
-          <img class="material_image" :src="favorite_material.image">
+        <div class="material_container" v-for="good_material in disp_list.good_materials" :key="good_material.id" @click="touchToMaterial(good_material.cid, good_material.bid, good_material.ver)">
+          <img class="material_image" :style="{ backgroundImage: 'url(/media/' + good_material.cid + '/b' + good_material.bid + '/v' + good_material.ver + '/' + good_material.content_image_main + ')' }">
           <div class="material_title">
-            {{favorite_material.title}}
+            {{good_material.title.slice(0, 15)}}...
           </div>
           <div class="material_description">
-            {{favorite_material.description}}
+            <p v-html="good_material.context.slice(0, 60) + '...' " style="display: block"></p>
           </div>
           <div class="author_container">
             <div class="author_name">
-              {{favorite_material.author}}
+              {{good_material.display_name}}
             </div>
             <div class="author_date">
-              {{favorite_material.auth_date}}
+              {{good_material.created_at}}
             </div>
           </div>
         </div>
@@ -69,29 +69,7 @@ export default {
     return {
       disp_list:{
         my_materials:[],
-        favorite_materials:[
-          {
-            title:"教材タイトル",
-            description:"EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー",
-            author:"Tatsuya Okazaki",
-            auth_date:"2020.01/01",
-            image:"https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60"
-          },
-          {
-            title:"教材タイトル",
-            description:"EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー",
-            author:"Tatsuya Okazaki",
-            auth_date:"2020.01/01",
-            image:"https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60"
-          },
-          {
-            title:"教材タイトル",
-            description:"EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー",
-            author:"Tatsuya Okazaki",
-            auth_date:"2020.01/01",
-            image:"https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60"
-          },
-        ],
+        good_materials: [],
       }
     };
   },
@@ -106,8 +84,15 @@ export default {
         this.axios
           .get('/api-v1/contents/me/', config)
           .then((response) => {
-            console.log(response.data)
             this.$set(this.disp_list, 'my_materials', response.data)
+          })
+          .catch(function(error) {
+              console.log(error)
+          })
+        this.axios
+          .get('/api-v1/goodmaterials/', config)
+          .then((response) => {
+            this.$set(this.disp_list, 'good_materials', response.data)
           })
           .catch(function(error) {
               console.log(error)

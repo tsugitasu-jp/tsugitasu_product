@@ -12,7 +12,7 @@
         </div>
         <div class="materials_main_description_text_tags_container">
           <div class="star_tag">
-            ★ ???
+            ★ {{main_material.good}}
           </div>
           <div class="material_tag_container" v-for="tag in main_material.tags" :key="tag.id">
             <div class="material_tag">
@@ -27,10 +27,11 @@
           <p v-html="main_material.context" style="display: block"></p>
         </div>
         <div class="materials_main_description_text_author">
-          <div class="author">
+          <div class="author" @click=touchToUser(main_material.uid)>
+            <div class="author_image" :style="{ backgroundImage: 'url(/media/' + main_material.photo_url + ')' }"></div>
             {{ main_material.displayname }}
           </div>
-          <div class="follow_btn">
+          <div class="follow_btn" style="cursor: pointer;">
             + 作成者をフォロー
           </div>
         </div>
@@ -44,7 +45,7 @@
       </div>
     </div>
     <div class="btn_container">
-      <div class="base_btn_style keep_btn">
+      <div class="base_btn_style keep_btn" @click="change_good_state">
         マイページにキープする
       </div>
       <div class="base_btn_style dl_btn" @click="getFiles">
@@ -212,6 +213,8 @@ import FooterMenu from "../components/FooterMenu.vue";
 var AWS = require('aws-sdk');
 const bucket_name = "tsugitasu-static"
 var zip = new JSZip();
+var firebase = require('firebase/app')
+require('firebase/auth')
 
 AWS.config.update(
   {
@@ -255,9 +258,9 @@ export default {
   methods: {
     init() {
       // 教材の取得
-      const cid = this.$route.params.cid
-      const bid = this.$route.params.bid
-      const vid = this.$route.params.vid
+      let cid = this.$route.params.cid
+      let bid = this.$route.params.bid
+      let vid = this.$route.params.vid
       this.axios
         .get(`/api-v1/content/${cid}/b${bid}/v${vid}/`)
         .then((response) => {
@@ -278,6 +281,9 @@ export default {
           this.$set(this.main_material, 'bid', response.data.bid)
           this.$set(this.main_material, 'is_latest', response.data.is_latest)
           this.$set(this.main_material, 'latest_vid', response.data.latest_vid)
+          this.$set(this.main_material, 'good', response.data.good)
+          this.$set(this.main_material, 'photo_url', response.data.photo_url)
+          this.$set(this.main_material, 'uid', response.data.uid)
 
           var map_images = image_subs.map(function(img) {
             return main_url + img
@@ -304,12 +310,35 @@ export default {
           }
         });
     },
+    change_good_state(){
+      let cid = this.$route.params.cid
+      let bid = this.$route.params.bid
+      let vid = this.$route.params.vid
+      firebase.default.auth().onAuthStateChanged((user) => {
+        user.getIdToken().then((token) => {
+          const config = {
+            headers: {
+              'Authorization': "JWT " + token,
+            },
+          };
+          this.axios
+            .get(`/api-v1/content/${cid}/b${bid}/v${vid}/add_good/`, config)
+            .then((response) => {
+              alert(response.data.result)
+              this.init();
+            });
+        })
+      })
+    },
     touchToMaterial(cid, bid, vid){
       console.log(cid)
       console.log(bid)
       console.log(vid)
       this.$router.push({ name: 'MaterialsDescription', params: {cid: cid, bid: bid, vid: vid}})
       this.scrollTop()
+    },
+    touchToUser(uid){
+      this.$router.push({ name: 'UserInfo', params: {uid:uid}})
     },
     scrollTop: function(){
       window.scrollTo({
@@ -366,6 +395,22 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.author{
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .author_image{
+    //background-color: crimson;
+    background-size:contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+  }
+}
 .materials_description_container{
   background-color: #FFFFFF;
   background-size:contain;
@@ -595,6 +640,7 @@ export default {
             //background-color: crimson;
             background-size:contain;
             background-repeat: no-repeat;
+            background-position: center;
             width: 40px;
             height: 40px;
             border-radius: 50%;
@@ -907,8 +953,8 @@ export default {
                   background-repeat: no-repeat;
                   width: 40px;
                   height: 40px;
+                  background-position: center;
                   border-radius: 99px;
-                  background-color: crimson;
                   margin-right: 10px;
                 }
                 .author_date_container{

@@ -64,7 +64,9 @@
     <div class="search_menu_contaienr" :style="MenuStyle.Header">
       <img class="side_trg_icon" src="../assets/icons/open.svg" alt="side_trg_icon" @click="SideMenu_trg_icon_click">
       <div class="search_box_container">
-        <input class="search_box" type="text" placeholder="検索項目を入力">
+        <form method="get" action="" @submit.prevent="exec" style="width:100%">
+          <input class="search_box" type="text" placeholder="検索項目を入力" v-model="input_filter">
+        </form>
         <img class="search_icon" src="../assets/icons/search-icon.svg" alt="search-icon">
       </div>
       <div id="menu_link_container">
@@ -148,6 +150,19 @@ export default {
     }
   },
   methods: {
+    exec: function () {
+      // 本来はajax通信をする
+      let tags = [];
+      let tag_o = this.input_filter.split(/\r|\s|#/)
+      for (let i = 0; i< tag_o.length;i++){
+        if (tag_o[i] == ''){
+          continue
+        }
+        tags.push(tag_o[i])
+      }
+      this.$router.push({ name: 'Filter', query: {tag: tags}})
+      return
+    },
     router_to (target) {
       this.$router.push(target);
     },
