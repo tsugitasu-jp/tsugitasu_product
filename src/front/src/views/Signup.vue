@@ -328,7 +328,7 @@ export default {
             },
           };
           axios
-          .post('http://127.0.0.1:8000/api-v1/make_account/', set_django_data, config)
+          .post('/api-v1/make_account/', set_django_data, config)
           .then(function() {
               if (route.query.redirect){
                 router.push(route.query.redirect)

@@ -92,7 +92,7 @@
         </div>
         <div class="materials_follow_follower" v-for="follower in disp_list.follower" :key="follower.id">
           <div class="user_info_btn">
-            <div class="user_image" :style="{ backgroundImage: 'url(http://127.0.0.1/media/' + follower.photo_url + ')' }" @click="jump_to(follower.uid)">
+            <div class="user_image" :style="{ backgroundImage: 'url(/media/' + follower.photo_url + ')' }" @click="jump_to(follower.uid)">
             </div>
             <div class="user_name">
               {{follower.displayname}}
@@ -117,7 +117,7 @@
         </div>
         <div class="materials_follow_follower" v-for="follow in disp_list.follow" :key="follow.id">
           <div class="user_info_btn">
-            <div class="user_image" :style="{ backgroundImage: 'url(http://127.0.0.1/media/' + follow.photo_url + ')' }" @click="jump_to(follow.uid)">
+            <div class="user_image" :style="{ backgroundImage: 'url(/media/' + follow.photo_url + ')' }" @click="jump_to(follow.uid)">
             </div>
             <div class="user_name">
               {{follow.displayname}}
@@ -224,7 +224,7 @@ export default {
       });
     
       this.axios
-        .get('http://127.0.0.1:8000/api-v1/follow/num/'+this.$route.params.uid + "/")
+        .get('/api-v1/follow/num/'+this.$route.params.uid + "/")
         .then((response) => {
           this.$set(this.user, 'follow_num', response.data.follow)
           this.$set(this.user, 'follower_num', response.data.follower)
@@ -276,7 +276,7 @@ export default {
               },
             };
             axios
-            .get('http://127.0.0.1:8000/api-v1/follow/create/' + uid, config)
+            .get('/api-v1/follow/create/' + uid, config)
             .then(() => {
               alert("フォローしました")
               this.$set(this.user, 'follower_num', this.user.follower_num+1)
@@ -304,7 +304,7 @@ export default {
     },
     change_follower(){
       this.axios
-      .get('http://127.0.0.1:8000/api-v1/follower/get/list/'+this.$route.params.uid + "/")
+      .get('/api-v1/follower/get/list/'+this.$route.params.uid + "/")
       .then((response) => {
         this.$set(this.disp_list, 'follower', response.data.follower_list)
       })

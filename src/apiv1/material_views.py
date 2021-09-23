@@ -134,7 +134,7 @@ class HistoryTreeGetAPIView(APIView):
                 projection={'displayname': 1, 'photo_url': 1}
             )
             # print(user)
-
+            
             def join_user(x):
                 x['author'] = user['displayname']
                 x['photo_url'] = user['photo_url']
@@ -218,7 +218,7 @@ class HistoryTreeGetAPIView(APIView):
 # 詳細表示用の教材データを取得 (機能番号21)
 class GetMaterialAPIView(APIView):
     authentication_classes = []
-    keys = ["mes", "uid", "displayname", "photo_url", "title", 
+    keys = ["mes", "uid", "displayname", "photo_url", "title", "is_latest", "cid", "bid",
         "context", "file_name", "content_image_main", "content_image_subs", "created_at", "tags", "comments", "good",]
 
     def get(self, request, cid, bid, ver):
@@ -228,7 +228,8 @@ class GetMaterialAPIView(APIView):
         cursor = co_material.find(
             filter={'cid': cid, 'bid': bid, 'ver': ver},
             projection={"user_ref": 1, "mes": 1, "title": 1, "context": 1, "file_name": 1, "content_image_main": 1,
-                        "content_image_subs": 1, "created_at": 1, "tags": 1, "comments": 1, "good": 1}
+                        "content_image_subs": 1, "created_at": 1, "tags": 1, "comments": 1, "good": 1, "is_latest": 1,
+                        "cid": 1, "bid": 1}
         )
 
         if cursor.count() == 0:
@@ -249,6 +250,14 @@ class GetMaterialAPIView(APIView):
 
         dic_list = list(map(join_user, cursor))
         dic_list = list(map(to_dict, dic_list))
+
+        # 最新版じゃなければ最新版のver値を返す
+        # print(dic_list)
+        if not dic_list[0]['is_latest']:
+            dic_list[0]['latest_vid'] = co_material.find_one(
+                filter={'cid': cid,'bid': bid, 'is_latest': True},
+                projection={'ver': 1}
+            )['ver']
 
         return Response(dic_list[0])
 
@@ -331,3 +340,61 @@ class AddGoodAPIView(APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         return Response(status=status.HTTP_200_OK)
+
+
+# 指定した条件に沿って教材を取得
+class GetMaterialsAPIView(APIView):
+    authentication_classes = []
+    keys = ["cid", "bid", "ver", "title", "context", "created_at", "content_image_main", "display_name"]
+    
+    def get(self, request):
+        if "op" in request.GET:
+            # query_paramが指定されている場合の処理
+            op = request.GET.get("op")
+            if op == "evaluation":
+                result = co_material.find(
+                    filter={'is_latest': True, 'bid': 1},
+                    sort=[('good',DESCENDING),('created_at',DESCENDING)],
+                    projection={'user_ref': 1, 'cid': 1, 'bid': 1, 'ver': 1, 'title': 1, 'context': 1, 'display_user': 1, 'content_image_main': 1, 'created_at': 1}
+                )
+            if op == "create":
+                result = co_material.find(
+                    filter={'is_latest': True, 'bid': 1},
+                    sort=[('created_at', DESCENDING)],
+                    projection={'user_ref': 1, 'cid': 1, 'bid': 1, 'ver': 1, 'title': 1, 'context': 1, 'display_user': 1, 'content_image_main': 1, 'created_at': 1}
+                )
+        
+        def join_user(x):
+            user_cursor = co_user.find_one(
+                filter={'uid': x['user_ref']},
+                projection={'displayname': 1, 'photo_url': 1},
+            )
+            x['display_name'] = user_cursor['displayname']
+            x['photo_url'] = user_cursor['photo_url']
+            return x
+        
+        def to_dict(x):
+            return {key: x[key] for key in self.keys}
+
+        def format_date(x):
+            td = datetime.now() - x['created_at']
+            day = td.days
+            if day < 0:
+                x['created_at'] = "error"
+            elif day == 0:
+                x['created_at'] = "今日"
+            elif day == 1:
+                x['created_at'] = "昨日"
+            elif day <= 30:
+                x['created_at'] = f"{day}日前"
+            elif day <= 359:
+                x['created_at'] = f"{day % 30}ヵ月前"
+            else:
+                x['created_at'] = x['created_at'].date()
+            return x
+
+        dic_list = list(map(join_user, result))
+        dic_list = list(map(to_dict, dic_list))
+        dic_list = list(map(format_date, dic_list))
+        
+        return Response(dic_list)

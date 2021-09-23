@@ -4,7 +4,7 @@
 <template>
   <div class="materials_description_container">
     <div class="materials_main_description">
-      <div class="materials_main_description_image" :style="{ backgroundImage: 'url(http://127.0.0.1/' + main_material.content_image_main + ')' }">
+      <div class="materials_main_description_image" :style="{ backgroundImage: 'url(/' + main_material.content_image_main + ')' }">
       </div>
       <div class="materials_main_description_text">
         <div class="materials_main_description_text_title">
@@ -38,7 +38,7 @@
     </div>
     <div class="materials_slide_description_container">
       <div class="slide-wrapper" v-for="img in main_material.content_image_subs" :key="img.id">
-        <div class="slide" :style="{ backgroundImage: 'url(http://127.0.0.1/' + img + ')' }">
+        <div class="slide" :style="{ backgroundImage: 'url(/' + img + ')' }">
           
         </div>
       </div>
@@ -146,14 +146,21 @@
             この教材の状況を確認する
           </div>
           <div class="update_number">
-            現在 <span style="color:#51B1F3;">4つ</span>のアップデート版が存在します
+            <!-- 現在 <span style="color:#51B1F3;">4つ</span>のアップデート版が存在します -->
           </div>
         </div>
         <div class="material_title">
-          小学校１年生向け「数の数え方と足し算」
+          {{ main_material.title }}
         </div>
-        <div class="now_watchng">
-          最新版を閲覧しています
+        <div v-if=main_material.is_latest>
+          <div class="now_watchng">
+            最新版を閲覧しています
+          </div>
+        </div>
+        <div v-else>
+          <div class="now_watchng" @click="touchToMaterial(main_material.cid, main_material.bid, main_material.latest_vid)" style="cursor: pointer">
+            最新版はこちら
+          </div>
         </div>
       </div>
       <div class="branch_tree_container">
@@ -172,7 +179,7 @@
                 <div v-if="materials.mes != ''" class="left_bottom" />
                 <p v-if="materials.mes != ''" >{{materials.mes}}</p>
                 <div v-if="materials.mes != ''" class="branch_material_author">
-                  <div class="author_image" :style="{ backgroundImage: 'url(http://127.0.0.1/media/' + materials.photo_url + ')' }">
+                  <div class="author_image" :style="{ backgroundImage: 'url(/media/' + materials.photo_url + ')' }">
                   </div>
                   <div class="author_date_container">
                     <div class="author">
@@ -233,7 +240,7 @@ export default {
     };
   },
   created() {
-    this.scrollTop()
+    this.scrollTop();
     this.init()
   },
   computed: {
@@ -252,7 +259,7 @@ export default {
       const bid = this.$route.params.bid
       const vid = this.$route.params.vid
       this.axios
-        .get(`http://127.0.0.1:8000/api-v1/content/${cid}/b${bid}/v${vid}/`)
+        .get(`/api-v1/content/${cid}/b${bid}/v${vid}/`)
         .then((response) => {
           console.log(response.data)
           const main_url = `media/${cid}/b${bid}/v${vid}/`
@@ -267,6 +274,10 @@ export default {
           this.$set(this.main_material, 'displayname', response.data['displayname'])
           this.$set(this.main_material, 'created_at', `${c_at[0]}.${c_at[1]}.${c_at[2]}`)
           this.$set(this.main_material, 'file_path', response.data.content_image_main)
+          this.$set(this.main_material, 'cid', response.data.cid)
+          this.$set(this.main_material, 'bid', response.data.bid)
+          this.$set(this.main_material, 'is_latest', response.data.is_latest)
+          this.$set(this.main_material, 'latest_vid', response.data.latest_vid)
 
           var map_images = image_subs.map(function(img) {
             return main_url + img
@@ -284,7 +295,7 @@ export default {
       
       /* 履歴(教材ツリーの取得) */
       this.axios
-        .get(`http://127.0.0.1:8000/api-v1/get_content_tree/${cid}/`)
+        .get(`/api-v1/get_content_tree/${cid}/`)
         .then((response) => {
           console.log(response.data)
           for(let i=0;i < response.data['contents'].length;i++){

@@ -7,6 +7,7 @@
           <p>あなたにとって最高の教材を見つけよう</p>
         </div>
         <div class="materials_box">
+        <!--
           <div class="box_title">あなたへのおすすめ</div>
           <div class="materials_container">
             <div class="material_container">
@@ -198,7 +199,7 @@
             </div>
           </div>
         </div>
-        <div class="materials_box">
+        <div class="materials_box"> 
           <div class="box_title">最近チェックした教材</div>
           <div class="materials_container">
             <div class="material_container">
@@ -475,560 +476,50 @@
             </div>
           </div>
         </div>
-        <div class="materials_box">
+        <div class="materials_box">-->
           <div class="box_title">評価の高い教材</div>
-          <div class="materials_container">
-            <div class="material_container">
-              <img class="material_image" src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
-              <div class="material_title">
-                教材タイトル
-              </div>
-              <div class="material_description">
-                EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
-              </div>
-              <div class="author_container">
-                <div class="author_name">
-                  作者名
+            <div class="materials_container">
+              <div class="material_container" v-for="eval_material in disp_list.eval_materials" :key="eval_material.id" @click="touchToMaterial(eval_material.cid, eval_material.bid, eval_material.ver)">
+                <img class="material_image" :style="{ backgroundImage: 'url(/media/' + eval_material.cid + '/b' + eval_material.bid + '/v' + eval_material.ver + '/' + eval_material.content_image_main + ')' }">
+                <div class="material_title">
+                  {{eval_material.title.slice(0, 15)}}...
                 </div>
-                <div class="author_date">
-                  2020.01/01
+                <div class="material_description">
+                  <p v-html="eval_material.context.slice(0, 60) + '...' " style="display: block"></p>
                 </div>
-              </div>
-            </div>
-            <div class="material_container">
-              <img class="material_image" src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
-              <div class="material_title">
-                教材タイトル
-              </div>
-              <div class="material_description">
-                EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
-              </div>
-              <div class="author_container">
-                <div class="author_name">
-                  作者名
-                </div>
-                <div class="author_date">
-                  2020.01/01
+                <div class="author_container">
+                  <div class="author_name">
+                    {{eval_material.display_name}}
+                  </div>
+                  <div class="author_date">
+                    {{eval_material.created_at}}
+                  </div>
                 </div>
               </div>
             </div>
-            <div class="material_container">
-              <img class="material_image" src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
-              <div class="material_title">
-                教材タイトル
-              </div>
-              <div class="material_description">
-                EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
-              </div>
-              <div class="author_container">
-                <div class="author_name">
-                  作者名
-                </div>
-                <div class="author_date">
-                  2020.01/01
-                </div>
-              </div>
-            </div>
-            <div class="material_container">
-              <img class="material_image" src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
-              <div class="material_title">
-                教材タイトル
-              </div>
-              <div class="material_description">
-                EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
-              </div>
-              <div class="author_container">
-                <div class="author_name">
-                  作者名
-                </div>
-                <div class="author_date">
-                  2020.01/01
-                </div>
-              </div>
-            </div>
-            <div class="material_container">
-              <img class="material_image" src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
-              <div class="material_title">
-                教材タイトル
-              </div>
-              <div class="material_description">
-                EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
-              </div>
-              <div class="author_container">
-                <div class="author_name">
-                  作者名
-                </div>
-                <div class="author_date">
-                  2020.01/01
-                </div>
-              </div>
-            </div>
-            <div class="material_container">
-              <img class="material_image" src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
-              <div class="material_title">
-                教材タイトル
-              </div>
-              <div class="material_description">
-                EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
-              </div>
-              <div class="author_container">
-                <div class="author_name">
-                  作者名
-                </div>
-                <div class="author_date">
-                  2020.01/01
-                </div>
-              </div>
-            </div>
-            <div class="material_container">
-              <img class="material_image" src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
-              <div class="material_title">
-                教材タイトル
-              </div>
-              <div class="material_description">
-                EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
-              </div>
-              <div class="author_container">
-                <div class="author_name">
-                  作者名
-                </div>
-                <div class="author_date">
-                  2020.01/01
-                </div>
-              </div>
-            </div>
-            <div class="material_container">
-              <img class="material_image" src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
-              <div class="material_title">
-                教材タイトル
-              </div>
-              <div class="material_description">
-                EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
-              </div>
-              <div class="author_container">
-                <div class="author_name">
-                  作者名
-                </div>
-                <div class="author_date">
-                  2020.01/01
-                </div>
-              </div>
-            </div>
-            <div class="material_container">
-              <img class="material_image" src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
-              <div class="material_title">
-                教材タイトル
-              </div>
-              <div class="material_description">
-                EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
-              </div>
-              <div class="author_container">
-                <div class="author_name">
-                  作者名
-                </div>
-                <div class="author_date">
-                  2020.01/01
-                </div>
-              </div>
-            </div>
-            <div class="material_container">
-              <img class="material_image" src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
-              <div class="material_title">
-                教材タイトル
-              </div>
-              <div class="material_description">
-                EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
-              </div>
-              <div class="author_container">
-                <div class="author_name">
-                  作者名
-                </div>
-                <div class="author_date">
-                  2020.01/01
-                </div>
-              </div>
-            </div>
-            <div class="material_container">
-              <img class="material_image" src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
-              <div class="material_title">
-                教材タイトル
-              </div>
-              <div class="material_description">
-                EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
-              </div>
-              <div class="author_container">
-                <div class="author_name">
-                  作者名
-                </div>
-                <div class="author_date">
-                  2020.01/01
-                </div>
-              </div>
-            </div>
-            <div class="material_container">
-              <img class="material_image" src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
-              <div class="material_title">
-                教材タイトル
-              </div>
-              <div class="material_description">
-                EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
-              </div>
-              <div class="author_container">
-                <div class="author_name">
-                  作者名
-                </div>
-                <div class="author_date">
-                  2020.01/01
-                </div>
-              </div>
-            </div>
-            <div class="material_container">
-              <img class="material_image" src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
-              <div class="material_title">
-                教材タイトル
-              </div>
-              <div class="material_description">
-                EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
-              </div>
-              <div class="author_container">
-                <div class="author_name">
-                  作者名
-                </div>
-                <div class="author_date">
-                  2020.01/01
-                </div>
-              </div>
-            </div>
-            <div class="material_container">
-              <img class="material_image" src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
-              <div class="material_title">
-                教材タイトル
-              </div>
-              <div class="material_description">
-                EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
-              </div>
-              <div class="author_container">
-                <div class="author_name">
-                  作者名
-                </div>
-                <div class="author_date">
-                  2020.01/01
-                </div>
-              </div>
-            </div>
-            <div class="material_container">
-              <img class="material_image" src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
-              <div class="material_title">
-                教材タイトル
-              </div>
-              <div class="material_description">
-                EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
-              </div>
-              <div class="author_container">
-                <div class="author_name">
-                  作者名
-                </div>
-                <div class="author_date">
-                  2020.01/01
-                </div>
-              </div>
-            </div>
-            <div class="material_container">
-              <img class="material_image" src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
-              <div class="material_title">
-                教材タイトル
-              </div>
-              <div class="material_description">
-                EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
-              </div>
-              <div class="author_container">
-                <div class="author_name">
-                  作者名
-                </div>
-                <div class="author_date">
-                  2020.01/01
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
         <div class="materials_box">
           <div class="box_title">新しく投稿された教材</div>
           <div class="materials_container">
-            <div class="material_container">
-              <img class="material_image" src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
+            <div class="material_container" v-for="create_material in disp_list.create_materials" :key="create_material.id" @click="touchToMaterial(create_material.cid, create_material.bid, create_material.ver)">
+              <img class="material_image" :style="{ backgroundImage: 'url(/media/' + create_material.cid + '/b' + create_material.bid + '/v' + create_material.ver + '/' + create_material.content_image_main + ')' }">
               <div class="material_title">
-                教材タイトル
+                {{create_material.title.slice(0, 15)}}...
               </div>
               <div class="material_description">
-                EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+                <p v-html="create_material.context.slice(0, 60) + '...' " style="display: block"></p>
               </div>
               <div class="author_container">
                 <div class="author_name">
-                  作者名
+                  {{create_material.display_name}}
                 </div>
                 <div class="author_date">
-                  2020.01/01
-                </div>
-              </div>
-            </div>
-            <div class="material_container">
-              <img class="material_image" src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
-              <div class="material_title">
-                教材タイトル
-              </div>
-              <div class="material_description">
-                EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
-              </div>
-              <div class="author_container">
-                <div class="author_name">
-                  作者名
-                </div>
-                <div class="author_date">
-                  2020.01/01
-                </div>
-              </div>
-            </div>
-            <div class="material_container">
-              <img class="material_image" src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
-              <div class="material_title">
-                教材タイトル
-              </div>
-              <div class="material_description">
-                EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
-              </div>
-              <div class="author_container">
-                <div class="author_name">
-                  作者名
-                </div>
-                <div class="author_date">
-                  2020.01/01
-                </div>
-              </div>
-            </div>
-            <div class="material_container">
-              <img class="material_image" src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
-              <div class="material_title">
-                教材タイトル
-              </div>
-              <div class="material_description">
-                EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
-              </div>
-              <div class="author_container">
-                <div class="author_name">
-                  作者名
-                </div>
-                <div class="author_date">
-                  2020.01/01
-                </div>
-              </div>
-            </div>
-            <div class="material_container">
-              <img class="material_image" src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
-              <div class="material_title">
-                教材タイトル
-              </div>
-              <div class="material_description">
-                EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
-              </div>
-              <div class="author_container">
-                <div class="author_name">
-                  作者名
-                </div>
-                <div class="author_date">
-                  2020.01/01
-                </div>
-              </div>
-            </div>
-            <div class="material_container">
-              <img class="material_image" src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
-              <div class="material_title">
-                教材タイトル
-              </div>
-              <div class="material_description">
-                EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
-              </div>
-              <div class="author_container">
-                <div class="author_name">
-                  作者名
-                </div>
-                <div class="author_date">
-                  2020.01/01
-                </div>
-              </div>
-            </div>
-            <div class="material_container">
-              <img class="material_image" src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
-              <div class="material_title">
-                教材タイトル
-              </div>
-              <div class="material_description">
-                EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
-              </div>
-              <div class="author_container">
-                <div class="author_name">
-                  作者名
-                </div>
-                <div class="author_date">
-                  2020.01/01
-                </div>
-              </div>
-            </div>
-            <div class="material_container">
-              <img class="material_image" src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
-              <div class="material_title">
-                教材タイトル
-              </div>
-              <div class="material_description">
-                EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
-              </div>
-              <div class="author_container">
-                <div class="author_name">
-                  作者名
-                </div>
-                <div class="author_date">
-                  2020.01/01
-                </div>
-              </div>
-            </div>
-            <div class="material_container">
-              <img class="material_image" src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
-              <div class="material_title">
-                教材タイトル
-              </div>
-              <div class="material_description">
-                EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
-              </div>
-              <div class="author_container">
-                <div class="author_name">
-                  作者名
-                </div>
-                <div class="author_date">
-                  2020.01/01
-                </div>
-              </div>
-            </div>
-            <div class="material_container">
-              <img class="material_image" src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
-              <div class="material_title">
-                教材タイトル
-              </div>
-              <div class="material_description">
-                EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
-              </div>
-              <div class="author_container">
-                <div class="author_name">
-                  作者名
-                </div>
-                <div class="author_date">
-                  2020.01/01
-                </div>
-              </div>
-            </div>
-            <div class="material_container">
-              <img class="material_image" src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
-              <div class="material_title">
-                教材タイトル
-              </div>
-              <div class="material_description">
-                EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
-              </div>
-              <div class="author_container">
-                <div class="author_name">
-                  作者名
-                </div>
-                <div class="author_date">
-                  2020.01/01
-                </div>
-              </div>
-            </div>
-            <div class="material_container">
-              <img class="material_image" src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
-              <div class="material_title">
-                教材タイトル
-              </div>
-              <div class="material_description">
-                EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
-              </div>
-              <div class="author_container">
-                <div class="author_name">
-                  作者名
-                </div>
-                <div class="author_date">
-                  2020.01/01
-                </div>
-              </div>
-            </div>
-            <div class="material_container">
-              <img class="material_image" src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
-              <div class="material_title">
-                教材タイトル
-              </div>
-              <div class="material_description">
-                EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
-              </div>
-              <div class="author_container">
-                <div class="author_name">
-                  作者名
-                </div>
-                <div class="author_date">
-                  2020.01/01
-                </div>
-              </div>
-            </div>
-            <div class="material_container">
-              <img class="material_image" src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
-              <div class="material_title">
-                教材タイトル
-              </div>
-              <div class="material_description">
-                EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
-              </div>
-              <div class="author_container">
-                <div class="author_name">
-                  作者名
-                </div>
-                <div class="author_date">
-                  2020.01/01
-                </div>
-              </div>
-            </div>
-            <div class="material_container">
-              <img class="material_image" src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
-              <div class="material_title">
-                教材タイトル
-              </div>
-              <div class="material_description">
-                EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
-              </div>
-              <div class="author_container">
-                <div class="author_name">
-                  作者名
-                </div>
-                <div class="author_date">
-                  2020.01/01
-                </div>
-              </div>
-            </div>
-            <div class="material_container">
-              <img class="material_image" src="https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="">
-              <div class="material_title">
-                教材タイトル
-              </div>
-              <div class="material_description">
-                EXPLAINーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
-              </div>
-              <div class="author_container">
-                <div class="author_name">
-                  作者名
-                </div>
-                <div class="author_date">
-                  2020.01/01
+                  {{create_material.created_at}}
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </div>   
       </div>
     </div>
     <FooterMenu />
@@ -1044,14 +535,39 @@ export default {
   },
   data() {
     return {
+      disp_list:{
+        eval_materials:[],
+        create_materials: [],
+      },
     };
   },
   created() {
+    this.axios
+      .get('/api-v1/materials/?op='+'evaluation')
+      .then((response) => {
+        this.$set(this.disp_list, 'eval_materials', response.data)
+      })
+      .catch(function(error) {
+          console.log(error)
+      })
+    this.axios
+      .get('/api-v1/materials/?op='+'create')
+      .then((response) => {
+        this.$set(this.disp_list, 'create_materials', response.data)
+      })
+      .catch(function(error) {
+          console.log(error)
+      })
   },
   computed: {
   },
   methods: {
-    
+    touchToMaterial(cid, bid, vid){
+      console.log(cid)
+      console.log(bid)
+      console.log(vid)
+      this.$router.push({ name: 'MaterialsDescription', params: {cid: cid, bid: bid, vid: vid}})
+    },
   },
 };
 </script>

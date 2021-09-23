@@ -15,7 +15,7 @@
       </div>
       <div class="materials_container">
         <div class="material_container" v-for="created_material in disp_list.created_materials" :key="created_material.id" @click="touchToMaterial(created_material.cid, created_material.bid, created_material.ver)">
-          <img class="material_image" :style="{ backgroundImage: 'url(http://127.0.0.1/media/' + created_material.cid + '/b' + created_material.bid + '/v' + created_material.ver + '/' + created_material.content_image_main + ')' }">
+          <img class="material_image" :style="{ backgroundImage: 'url(/media/' + created_material.cid + '/b' + created_material.bid + '/v' + created_material.ver + '/' + created_material.content_image_main + ')' }">
           <div class="material_title">
             {{created_material.title.slice(0, 15)}}...
           </div>
@@ -43,17 +43,18 @@
         <div class="modal_label">
           トップ＆その他イメージ
         </div>
-        <div class="material_image_container">
+        <div class="material_image_container" >
           <div class="material_image_top">
+            
           </div>
           <div class="other_material_image_container">
-            <div class="material_image"/>
+            <div class="material_image" @click="add_file"/>
             <div class="material_image"/>
             <div class="material_image"/>
           </div>
         </div>
         <div class="modal_label">
-          タイトル（15字以内）
+          タイトル（20字以内）
         </div>
         <input class="input" type="text" placeholder="タイトルを入力">
         <div class="modal_label">
@@ -144,7 +145,7 @@ export default {
           },
         };
         this.axios
-          .get('http://127.0.0.1:8000/api-v1/contents/me/', config)
+          .get('/api-v1/contents/me/', config)
           .then((response) => {
             console.log(response.data)
             this.$set(this.disp_list, 'created_materials', response.data)
@@ -158,6 +159,9 @@ export default {
   computed: {
   },
   methods: {
+    add_file(){
+
+    },
     modal_disp_change () {
       this.Modal_Disp = !this.Modal_Disp
     },

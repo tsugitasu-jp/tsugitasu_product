@@ -10,7 +10,7 @@
       </div>
       <div class="materials_container">
         <div class="material_container" v-for="my_material in disp_list.my_materials" :key="my_material.id" @click="touchToMaterial(my_material.cid, my_material.bid, my_material.ver)">
-          <img class="material_image" :style="{ backgroundImage: 'url(http://127.0.0.1/media/' + my_material.cid + '/b' + my_material.bid + '/v' + my_material.ver + '/' + my_material.content_image_main + ')' }">
+          <img class="material_image" :style="{ backgroundImage: 'url(/media/' + my_material.cid + '/b' + my_material.bid + '/v' + my_material.ver + '/' + my_material.content_image_main + ')' }">
           <div class="material_title">
             {{my_material.title.slice(0, 15)}}...
           </div>
@@ -104,7 +104,7 @@ export default {
           },
         };
         this.axios
-          .get('http://127.0.0.1:8000/api-v1/contents/me/', config)
+          .get('/api-v1/contents/me/', config)
           .then((response) => {
             console.log(response.data)
             this.$set(this.disp_list, 'my_materials', response.data)

@@ -16,13 +16,10 @@ services:
         build: 
           context: .
           dockerfile: docker/back/Dockerfile
-        #command: 'sh start.sh'
 
         command: uwsgi --socket :8001 --module config.wsgi --py-autoreload 1
         volumes:
             - ./src:/code
-        #ports:
-        #    - 8000:8000
         expose:
             - "8001"
         depends_on:
@@ -30,29 +27,12 @@ services:
         restart: always
         stdin_open: true
     
-    front:
-        build: 
-            context: .
-            dockerfile: docker/front/Dockerfile
-        ports:
-            - 8080:8080
-        stdin_open: true
-        volumes:
-            - ./src/front:/code/front
-        environment:
-            VUE_APP_API_ENDPOINT: http://localhost:8000
-    
-    # For celery
-    #redis:
-    #    image: redis:alpine
-    
     nginx:
         image: nginx:latest
         environment:
             TZ: 'Asia/Tokyo'
         ports:
             - 80:80
-            - 8000:8000
         volumes:
             - ./nginx/conf:/etc/nginx/conf.d
             - ./nginx/uwsgi:/etc/nginx/uwsgi

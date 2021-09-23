@@ -6,9 +6,6 @@ hoge.vue
 <template>
   <div id="search-ip">
     <div>
-      <div>
-        <input @click="getFile" type="button" value="ファイルを取得">
-      </div>
       <form id="upload_form" enctype="multipart/form-data">
           <input @change="selectedFile" type="file" name="file">
           <input @change="selectedMainImage" type="file" name="file" accept="image/*">
@@ -21,18 +18,6 @@ hoge.vue
 
 
 <script>
-
-  var AWS = require('aws-sdk');
-  AWS.config.update(
-    {
-      accessKeyId: "AKIAQ7J3FIK6FGBSTY7Q",
-      secretAccessKey: "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",
-    }
-  );
-  var s3 = new AWS.S3();
-
-  const bucket_name = "tsugitasu-static"
-
   function array_to_formdata(data, formData){
     Object.keys(data).forEach(key => {
       const value = data[key];
@@ -96,36 +81,7 @@ hoge.vue
               // error 処理
           })
       },
-      
-      getFile() {
-        s3.getObject(
-          { 
-            Bucket: bucket_name, 
-            Key: "media/images/login_pic.2ee7e652.png" 
-          },
-          function (error, data) {
-            if (error != null) {
-              alert("Failed to retrieve an object: " + error);
-            } else {
-              const blob = new Blob([data.Body], {type: data.ContentType});
-              var zip = new JSZip();
-              zip.file("login_pic.2ee7e652.png", blob);
-              //zip.file("login_pic.png", blob);
-              zip.generateAsync({type:"blob"})
-                 .then(function(content) {
-                    saveAs(content, "example.zip");
-                 });
-
-              //const fileURL = window.URL.createObjectURL(blob);
-              //const link = document.createElement('a')
-              //link.href = fileURL
-              //link.download = "login_pic.2ee7e652.png"
-              //link.click()
-              //document.body.removeChild(link);
-            }
-          }
-        );
-      }
     }
   }
+
 </script>

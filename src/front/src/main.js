@@ -25,8 +25,12 @@ AWS.config.update(
   }
 );
 
+axios.defaults.baseURL = process.env.VUE_APP_API_ENDPOINT;
+
 Vue.config.productionTip = false
 Vue.use(VueAxios, axios, firebase, AWS) //追記
+
+
 
 new Vue({
   router,
